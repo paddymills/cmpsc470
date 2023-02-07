@@ -37,7 +37,7 @@ public class Parser
         {
             int token = lexer.yylex();  // get next token-name
             Object attr = yylval.obj;   // get      token-attribute
-            String tokenname = "SEMI";
+            String tokenname = "<unknown>";
 
             if(token == 0)
             {
@@ -52,7 +52,35 @@ public class Parser
                 return -1;
             }
 
+            // get String representation of token
+            tokenname = get_tokenname(token);
+
             System.out.println("<" + tokenname + ", token-attr:\"" + attr + "\", " + lexer.lineno + ":" + lexer.column + ">");
         }
+    }
+
+    private String get_tokenname(int token) {
+        if ( token == OP      ) return "OP";
+        if ( token == RELOP   ) return "RELOP";
+        if ( token == ASSIGN  ) return "ASSIGN";
+        if ( token == LPAREN  ) return "LPAREN";
+        if ( token == RPAREN  ) return "RPAREN";
+        if ( token == SEMI    ) return "SEMI";
+        if ( token == COMMA   ) return "COMMA";
+        if ( token == FUNCRET ) return "FUNCRET";
+        if ( token == NUM     ) return "NUM";
+        if ( token == ID      ) return "ID";
+        if ( token == BEGIN   ) return "BEGIN";
+        if ( token == END     ) return "END";
+        if ( token == INT     ) return "INT";
+        if ( token == PRINT   ) return "PRINT";
+        if ( token == VAR     ) return "VAR";
+        if ( token == FUNC    ) return "FUNC";
+        if ( token == IF      ) return "IF";
+        if ( token == ELSE    ) return "ELSE";
+        if ( token == WHILE   ) return "WHILE";
+        if ( token == VOID    ) return "VOID";
+
+        return "unknown token with ID " + token;
     }
 }
