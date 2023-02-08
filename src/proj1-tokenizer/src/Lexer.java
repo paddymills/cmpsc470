@@ -1,13 +1,8 @@
+import javax.lang.model.util.ElementScanner14;
+
 public class Lexer
 {
     private static final char EOF        =  0;
-
-    private static final int ASCII_NUM_START = 48;
-    private static final int ASCII_NUM_END = 57;
-    private static final int ASCII_LOWER_START = 65;
-    private static final int ASCII_LOWER_END = 90;
-    private static final int ASCII_UPPER_START = 97;
-    private static final int ASCII_UPPER_END = 122;
 
 
     private Parser          yyparser;       // parent parser object
@@ -51,6 +46,7 @@ public class Lexer
     public int yylex() throws Exception
     {
         int state = 0;
+        StringBuffer tokenstring = new StringBuffer();
 
         while(true)
         {
@@ -61,23 +57,33 @@ public class Lexer
                     c = NextChar();
                     column = current_col;
 
-                    if(c == ';') { state=   1; continue; }
-                    if(c == EOF) { state=9999; continue; }
+                    if (c == ';') { state=   1; continue; }
+                    if (c == EOF) { state=9999; continue; }
 
                     // the rest of the tokens
-                    if(c == '+' || c == '-' || c == '*' || c == '/') { state=10; continue; }
+                    if (c == '+' || c == '-' || c == '*' || c == '/') { state=10; continue; }
 
-                    if(c == '{') { 
-                        yyparser.yylval = new ParserVal((Object)"{");   // set token attribute
-                        return Parser.BEGIN;                            // return token type
+                    if (c == '{') { 
+                        yyparser.yylval = new ParserVal((Object) "{");   // set token attribute
+                        return Parser.BEGIN;                        // return token type
                     }
                     if(c == '}') {
-                        yyparser.yylval = new ParserVal((Object)"}");   // set token attribute
-                        return Parser.END;                              // return token type
+                        yyparser.yylval = new ParserVal((Object) "}");   // set token attribute
+                        return Parser.END;                          // return token type
                     }
 
-                    if(c == 'f') { state=2; continue; }
-                    if(c == 'm') { state=3; continue; }
+                    if ( c == '_' || Character.isLetter(c) ) {
+                        tokenstring.append(c);
+                        
+                        state=2;
+                        continue;
+                    }
+                    if ( Character.isDigit(c) ) {
+                        tokenstring.append(c);
+
+                        state=3;
+                        continue;
+                    }
 
                     if(c == ' ') { continue; }
                     if (c == '\n') {
@@ -90,31 +96,65 @@ public class Lexer
 
                     return Fail();
                 case 1:
-                    yyparser.yylval = new ParserVal((Object)";");   // set token-attribute to yyparser.yylval
+                    yyparser.yylval = new ParserVal((Object) ";");       // set token-attribute to yyparser.yylval
                     return Parser.SEMI;                             // return token-name
 
                 case 2:
                     c = NextChar();
-                    if(c != 'u') { return Fail(); }
-                    c = NextChar();
-                    if(c != 'n') { return Fail(); }
-                    c = NextChar();
-                    if(c != 'c') { return Fail(); }
 
-                    yyparser.yylval = new ParserVal((Object)"func");    // set token attribute
-                    return Parser.FUNC;                                 // return token type
+                    if ( c == '_' || Character.isLetter(c) || Character.isDigit(c) ) {
+                        tokenstring.append(c);
+                        continue;
+                    }
+                    
+                    else {
+                        yyparser.yylval = new ParserVal((Object) tokenstring.toString());    // set token attribute
+
+                        // return token type
+                        if ( tokenstring.toString().equals("int") )
+                            return Parser.INT;
+                        else if ( tokenstring.toString().equals("print") )
+                            return Parser.PRINT;
+                        else if ( tokenstring.toString().equals("var") )
+                            return Parser.VAR;
+                        else if ( tokenstring.toString().equals("func") )
+                            return Parser.FUNC;
+                            else if ( tokenstring.toString().equals("if") )
+                            return Parser.IF;
+                        else if ( tokenstring.toString().equals("else") )
+                            return Parser.ELSE;
+                        else if ( tokenstring.toString().equals("while") )
+                            return Parser.WHILE;
+                        else if ( tokenstring.toString().equals("void") )
+                            return Parser.VOID;
+                        
+                        else
+                            return Parser.ID;
+                    }
+                    
+                // number
                 case 3:
                     c = NextChar();
-                    if(c != 'a') { return Fail(); }
+                    if ( Character.isDigit(c) ) {
+                        tokenstring.append(c);
+                        continue;
+                    }
+                    else if ( c == '.' ) {
+                        state = 4;
+                        continue;
+                    }
+                    else {
+                        yyparser.yylval = new ParserVal((Object) tokenstring.toString());   // set token attribute
+                        return Parser.NUM;                                                  // return token type
+                    }
+                // decimal encountered, validate that digits follow
+                case 4:
                     c = NextChar();
-                    if(c != 'i') { return Fail(); }
-                    c = NextChar();
-                    if(c != 'n') { return Fail(); }
-
-                    yyparser.yylval = new ParserVal((Object)"main");    // set token attribute
-                    return Parser.ID;                                   // return token type
-
-
+                    if ( Character.isDigit(c) )
+                        state = 3;
+                    else
+                        return Fail();
+                    
                 case 9999:
                     return EOF;                                     // return end-of-file symbol
             }

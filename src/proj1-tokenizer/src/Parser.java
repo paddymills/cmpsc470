@@ -36,8 +36,6 @@ public class Parser
         while ( true )
         {
             int token = lexer.yylex();  // get next token-name
-            Object attr = yylval.obj;   // get      token-attribute
-            String tokenname = "<unknown>";
 
             if(token == 0)
             {
@@ -51,9 +49,12 @@ public class Parser
                 System.out.println("Error! There is a lexical error at " + lexer.lineno + ":" + lexer.column + ".");
                 return -1;
             }
+            
+            // get token-attribute
+            Object attr = yylval.obj;
 
             // get String representation of token
-            tokenname = get_tokenname(token);
+            String tokenname = get_tokenname(token);
 
             System.out.println("<" + tokenname + ", token-attr:\"" + attr + "\", " + lexer.lineno + ":" + lexer.column + ">");
         }
