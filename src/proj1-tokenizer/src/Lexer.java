@@ -34,6 +34,7 @@ public class Lexer
         lexbegin_buffer = currentbuffer;
     }
 
+    // switches which buffer is actively reading
     private void switchBuffer() {
         if ( currentbuffer == buffer_a ) currentbuffer = buffer_b;
         else                             currentbuffer = buffer_a;
@@ -54,16 +55,21 @@ public class Lexer
 
         // set last character to EOF
         currentbuffer[chars_read] = EOF;
-
-        // System.out.println("Buffer read: " + chars_read);
-        // System.out.println("buffer read: `" + new String(currentbuffer).replace('\n', '|') + "`");
     }
 
+    /*
+     * gets the next character from the buffer
+     * 
+     * handles buffer switching when hitting sentinel (EOF)
+     * advances forward
+     * reads other buffer on switch
+     */
     private char getNextChar() throws Exception {
         // http://tutorials.jenkov.com/java-io/readers-writers.html
         int data = currentbuffer[forward];
         forward++;
         
+        // EOF: could be sentinel or true EOF
         if (data == EOF) {
             // at end of buffer, so read and switch buffers
             if (forward == BUFFER_LEN) {
@@ -78,17 +84,23 @@ public class Lexer
         return (char)data;
     }
 
+    // retracts forward pointer one character
     private void retract() {
         // start of buffer: retract to previous buffer
         if ( forward == 0 ) {
             switchBuffer();
-            forward = BUFFER_LEN - 2;
+            forward = BUFFER_LEN - 2;   // subtract 2 so that we are not on the EOF sentinel
         }
 
         else
             forward--;
     }
 
+    /*
+     * gets string representation of lexeme
+     * 
+     * handles lexeme entirely in one buffer or if it spans 2 buffers
+     */
     private String getLexeme() {
         // whole lexeme is on same buffer
         if ( lexbegin_buffer == currentbuffer ) {
@@ -137,7 +149,6 @@ public class Lexer
                     c = getNextChar();
 
                     if ( Character.isLetter(c) ) { state = 1; continue; }   // ID or keyword
-                    // if ( c == '_'              ) { state = 2; continue; }   // keyword
                     if ( Character.isDigit(c)  ) { state = 5; continue; }   // numeric
 
                     // single state tokens
