@@ -27,7 +27,7 @@
   }
 %}
 
-op          = [+-*/]|and|or|not
+op          = [+\-*\/]|and|or|not
 relop       = [<>]=?|[<>!]?=
 int         = [0-9]+
 float       = [0-9]+("."[0-9]+)?
@@ -77,9 +77,9 @@ blockcomment= "#{"(.|\n)*"}#"
 
 {int}                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.INT_LIT ; }
 {identifier}                        { parser.yylval = new ParserVal((Object)yytext()); return Parser.IDENT   ; }
-{linecomment}                       { System.out.println("line comment: \""   +yytext()+"\""); /* skip */ }
-{newline}                           { System.out.println("newline"                          ); /* skip */ }
-{whitespace}                        { System.out.println("whitespace: \""+yytext()+"\""     ); /* skip */ }
+{linecomment}                       { System.out.print  (yytext()                           ); /* skip */ }
+{newline}                           { System.out.println("       "                          ); /* skip */ }
+{whitespace}                        { System.out.print  (yytext()                           ); /* skip */ }
 {blockcomment}                      { System.out.println("block comment begin \""           );
                                       System.out.println(yytext()                           );
                                       System.out.println("\" block comment end"             ); /* skip */ }
