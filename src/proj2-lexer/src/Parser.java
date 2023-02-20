@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class Parser
 {
     public static final int PRINT       = 10; // "print"
@@ -37,12 +40,14 @@ public class Parser
 
     public Parser(java.io.Reader r, Compiler compiler) throws Exception
     {
-        this.compiler = compiler;
-        this.lexer    = new Lexer(r, this);
+        this.compiler       = compiler;
+        this.lexer          = new Lexer(r, this);
+        this.symbol_table   = new HashMap<Integer, Object>();
     }
 
-    Lexer            lexer;
-    Compiler         compiler;
+    Lexer                       lexer;
+    Compiler                    compiler;
+    HashMap<Integer, Object>    symbol_table;
     public ParserVal yylval;
 
     public int yyparse() throws java.io.IOException
@@ -62,7 +67,97 @@ public class Parser
             }
 
             Object attr = yylval.obj;
-            System.out.println("<token-id:" + token + ", token-attr:" + attr + ", lineno:" + lexer.lineno + ", col:" + lexer.column + ">");
+            int symbol_table_id = -1;
+
+            // handle symbol table
+            if ( token == IDENT )
+                symbol_table_id = handle_symbol_table(attr);
+                
+
+            // print `<{token name}`
+            System.out.print("<" + get_token_name(token));
+
+            switch (token) {
+                case BOOL_LIT:
+                    System.out.print(", attr:" + attr);
+                    break;
+
+                case IDENT:
+                    System.out.print(", attr:sym-id:" + symbol_table_id);
+                    break;
+            }
+
+            // print `, {line}:{column}>`
+            System.out.print(", " + lexer.lineno + ":" + lexer.column +">");
+            
+            // System.out.print("<token-id:" + token + ", token-attr:" + attr + ", lineno:" + lexer.lineno + ", col:" + lexer.column + ">");
+            System.out.print(" ");  // delimit lexemes with space
         }
+    }
+
+    private String get_token_name(int token) {
+        if ( token == PRINT    ) return "PRINT";
+        if ( token == FUNC     ) return "FUNC";
+        if ( token == VAR      ) return "VAR";
+        if ( token == VOID     ) return "VOID";
+        if ( token == BOOL     ) return "BOOL";
+        if ( token == INT      ) return "INT";
+        if ( token == FLOAT    ) return "FLOAT";
+        if ( token == STRUCT   ) return "STRUCT";
+        if ( token == SIZE     ) return "SIZE";
+        if ( token == NEW      ) return "NEW";
+        if ( token == IF       ) return "IF";
+        if ( token == ELSE     ) return "ELSE";
+        if ( token == WHILE    ) return "WHILE";
+        if ( token == RETURN   ) return "RETURN";
+        if ( token == BREAK    ) return "BREAK";
+        if ( token == CONTINUE ) return "CONTINUE";
+
+        if ( token == BOOL_LIT ) return "BOOL_VALUE";
+
+        if ( token == LPAREN   ) return "LPAREN";
+        if ( token == RPAREN   ) return "RPAREN";
+        if ( token == LBRACKET ) return "LBRACKET";
+        if ( token == RBRACKET ) return "RBRACKET";
+        if ( token == SEMI     ) return "SEMI";
+        if ( token == COMMA    ) return "COMMA";
+        if ( token == DOT      ) return "DOT";
+        if ( token == ADDR     ) return "ADDR";
+        if ( token == ASSIGN   ) return "ASSIGN";
+        if ( token == FUNCRET  ) return "FUNCRET";
+        if ( token == OP       ) return "OP";
+        if ( token == RELOP    ) return "RELOP";
+
+        if ( token == INT_LIT  ) return "INT_VALUE";
+        if ( token == FLOAT_LIT) return "FLOAT_VALUE";
+        if ( token == IDENT    ) return "ID";
+
+        // not needed as long as this gets called only from a keyword match
+        return "unknown token with ID " + token;
+    }
+
+    private int handle_symbol_table(Object attr) {
+        int id = 0;
+
+        // check if in symbol table
+        if ( !symbol_table.containsValue(attr) ) {
+            // If not in symbol table, add
+            id = symbol_table.size();
+            symbol_table.put(id, attr);
+            
+            System.out.print("<<new symbol table entity [" + id + ", " + attr + "]>>");
+
+            return id;
+        }
+
+        // else, search symbol table for attr
+        // got inspiration from https://stackoverflow.com/questions/1383797/java-hashmap-how-to-get-key-from-value
+        for ( Map.Entry<Integer,Object> entry : symbol_table.entrySet() ) {
+            if ( entry.getValue().equals(attr) )
+                return entry.getKey();
+        }
+
+        // should never happen, but lets make our editor happy
+        return -1;
     }
 }
