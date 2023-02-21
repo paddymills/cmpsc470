@@ -91,7 +91,6 @@ public class Parser
             System.out.print(", " + lexer.lineno + ":" + lexer.column +">");
             
             // System.out.print("<token-id:" + token + ", token-attr:" + attr + ", lineno:" + lexer.lineno + ", col:" + lexer.column + ">");
-            System.out.print(" ");  // delimit lexemes with space
         }
     }
 
@@ -115,6 +114,8 @@ public class Parser
 
         if ( token == BOOL_LIT ) return "BOOL_VALUE";
 
+        if ( token == BEGIN    ) return "BEGIN";
+        if ( token == END      ) return "END";
         if ( token == LPAREN   ) return "LPAREN";
         if ( token == RPAREN   ) return "RPAREN";
         if ( token == LBRACKET ) return "LBRACKET";
@@ -145,7 +146,7 @@ public class Parser
             id = symbol_table.size();
             symbol_table.put(id, attr);
             
-            System.out.print("<<new symbol table entity [" + id + ", " + attr + "]>>");
+            System.out.print("<<new symbol table entity [" + id + ", \"" + attr + "\"]>>");
 
             return id;
         }
