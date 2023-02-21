@@ -15,8 +15,11 @@
 %column
 %byaccj
 
+%state PREPROC_NEEDS_ID, PREPROC_NEEDS_VAL, PREPROC_NEEDS_TERM
+  
+
 %{
-  public static final int SKIP = -99;
+  public static final int SKIP = 99;
 
   public Parser   parser;
   public int      lineno;
@@ -59,6 +62,37 @@ linecomment = "##".*
 blockcomment= "#{"(.|\n)*"}#"
 
 %%
+"#define" {
+  System.out.print("#define found");
+  yybegin(PREPROC_NEEDS_ID);
+}
+
+<PREPROC_NEEDS_ID> {
+  {whitespace} {}
+  {identifier} {
+    System.out.print("<ID: " + yytext() + ", ");
+    yybegin(PREPROC_NEEDS_VAL);
+  }
+  [^] { System.err.println("\nError: #define has no identifier"); }
+}
+
+<PREPROC_NEEDS_VAL> {
+  {whitespace} {}
+  [^ ]+ {
+    System.out.print("VAL: " + yytext() + ">");
+    yybegin(PREPROC_NEEDS_TERM);
+  }
+  [^] { System.err.println("\nError: #define has no value"); }
+}
+
+<PREPROC_NEEDS_TERM> {
+  {whitespace} {}
+  {newline} {
+    System.out.print("\n");
+    yybegin(YYINITIAL);
+  }
+  [^] { System.err.println("\nError: unexpected post-#define characters: " + yytext()); }
+}
 
 "print"         { return consume_parse( Parser.PRINT     ); }
 "func"          { return consume_parse( Parser.FUNC      ); }
