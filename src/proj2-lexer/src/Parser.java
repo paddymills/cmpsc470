@@ -63,6 +63,9 @@ public class Parser
             if(token == -1)
             {
                 // error
+                System.out.print  ("\nLexical error: unexpected character '" + lexer.yytext() + "'");
+                System.out.println(" at " + lexer.lineno + ":" + lexer.column + ".");
+
                 return -1;
             }
 
@@ -79,7 +82,11 @@ public class Parser
 
             switch (token) {
                 case BOOL_LIT:
-                    System.out.print(", attr:" + attr);
+                case INT_LIT:
+                case FLOAT_LIT:
+                case OP:
+                case RELOP:
+                    System.out.print(", attr:\"" + attr + "\"");
                     break;
 
                 case IDENT:
@@ -112,8 +119,6 @@ public class Parser
         if ( token == BREAK    ) return "BREAK";
         if ( token == CONTINUE ) return "CONTINUE";
 
-        if ( token == BOOL_LIT ) return "BOOL_VALUE";
-
         if ( token == BEGIN    ) return "BEGIN";
         if ( token == END      ) return "END";
         if ( token == LPAREN   ) return "LPAREN";
@@ -129,6 +134,7 @@ public class Parser
         if ( token == OP       ) return "OP";
         if ( token == RELOP    ) return "RELOP";
 
+        if ( token == BOOL_LIT ) return "BOOL_VALUE";
         if ( token == INT_LIT  ) return "INT_VALUE";
         if ( token == FLOAT_LIT) return "FLOAT_VALUE";
         if ( token == IDENT    ) return "ID";

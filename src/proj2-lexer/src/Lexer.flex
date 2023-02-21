@@ -11,9 +11,12 @@
 %%
 
 %class Lexer
+%line
+%column
 %byaccj
 
 %{
+  public static final int SKIP = -99;
 
   public Parser   parser;
   public int      lineno;
@@ -27,18 +30,25 @@
   }
 
   private int consume_parse(int parse_code) {
-    if ( parse_code > -1 )
+    // skip line -> just print it back out
+    if ( parse_code == SKIP)
+      System.out.print( yytext() );
+      
+    // else, set value for parser
+    else
       parser.yylval = new ParserVal( (Object) yytext() ) ;
 
-    // else, consume text
-    else  
-      System.out.print( yytext() );
-    
+    // we will update the line and column
+    //  (even though they are really only needed when returning a ParserVal)
+    // remember, yyline/yycolumn are 0-indexed
+    lineno = yyline   + 1;
+    column = yycolumn + 1;
+
     return parse_code;
   }
 %}
 
-op          = [+\-*\/]|and|or|not
+op          = [\+\-\*\/]|and|or|not
 relop       = [<>]=?|[<>!]?=
 int         = [0-9]+
 float       = [0-9]+("."[0-9]+)?
@@ -50,47 +60,50 @@ blockcomment= "#{"(.|\n)*"}#"
 
 %%
 
-"print"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.PRINT   ; }
-"func"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.FUNC    ; }
-"var"                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.VAR     ; }
-"void"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.VOID    ; }
-"bool"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL    ; }
-"int"                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.INT     ; }
-"float"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.FLOAT   ; }
-"struct"                            { parser.yylval = new ParserVal((Object)yytext()); return Parser.STRUCT  ; }
-"size"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.SIZE    ; }
-"new"                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.NEW     ; }
-"if"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.IF      ; }
-"else"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.ELSE    ; }
-"while"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.WHILE   ; }
-"return"                            { parser.yylval = new ParserVal((Object)yytext()); return Parser.RETURN  ; }
-"break"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.BREAK   ; }
-"continue"                          { parser.yylval = new ParserVal((Object)yytext()); return Parser.CONTINUE; }
-"true"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL_LIT; }
-"false"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL_LIT; }
-"{"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.BEGIN   ; }
-"}"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.END     ; }
-"("                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.LPAREN  ; }
-")"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.RPAREN  ; }
-"["                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.LBRACKET; }
-"]"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.RBRACKET; }
-";"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.SEMI    ; }
-","                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.COMMA   ; }
-"."                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.DOT     ; }
-"&"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.ADDR    ; }
-"<-"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.ASSIGN  ; }
-"->"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.FUNCRET ; }
-{op}                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.OP      ; }
-{relop}                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.RELOP   ; }
-{int}                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.INT_LIT ; }
-{identifier}                        { parser.yylval = new ParserVal((Object)yytext()); return Parser.IDENT   ; }
-{linecomment}                       { System.out.print  (yytext()                           ); /* skip */ }
-{newline}                           { System.out.print  (yytext()                           ); /* skip */ }
-{whitespace}                        { System.out.print  (yytext()                           ); /* skip */ }
-{blockcomment}                      { System.out.print  (yytext()                           ); /* skip */ }
+"print"         { return consume_parse( Parser.PRINT     ); }
+"func"          { return consume_parse( Parser.FUNC      ); }
+"var"           { return consume_parse( Parser.VAR       ); }
+"void"          { return consume_parse( Parser.VOID      ); }
+"bool"          { return consume_parse( Parser.BOOL      ); }
+"int"           { return consume_parse( Parser.INT       ); }
+"float"         { return consume_parse( Parser.FLOAT     ); }
+"struct"        { return consume_parse( Parser.STRUCT    ); }
+"size"          { return consume_parse( Parser.SIZE      ); }
+"new"           { return consume_parse( Parser.NEW       ); }
+"if"            { return consume_parse( Parser.IF        ); }
+"else"          { return consume_parse( Parser.ELSE      ); }
+"while"         { return consume_parse( Parser.WHILE     ); }
+"return"        { return consume_parse( Parser.RETURN    ); }
+"break"         { return consume_parse( Parser.BREAK     ); }
+"continue"      { return consume_parse( Parser.CONTINUE  ); }
+"true"          { return consume_parse( Parser.BOOL_LIT  ); }
+"false"         { return consume_parse( Parser.BOOL_LIT  ); }
+
+"{"             { return consume_parse( Parser.BEGIN     ); }
+"}"             { return consume_parse( Parser.END       ); }
+"("             { return consume_parse( Parser.LPAREN    ); }
+")"             { return consume_parse( Parser.RPAREN    ); }
+"["             { return consume_parse( Parser.LBRACKET  ); }
+"]"             { return consume_parse( Parser.RBRACKET  ); }
+";"             { return consume_parse( Parser.SEMI      ); }
+","             { return consume_parse( Parser.COMMA     ); }
+"."             { return consume_parse( Parser.DOT       ); }
+"&"             { return consume_parse( Parser.ADDR      ); }
+"<-"            { return consume_parse( Parser.ASSIGN    ); }
+"->"            { return consume_parse( Parser.FUNCRET   ); }
+
+{op}            { return consume_parse( Parser.OP        ); }
+{relop}         { return consume_parse( Parser.RELOP     ); }
+{int}           { return consume_parse( Parser.INT_LIT   ); }
+{float}         { return consume_parse( Parser.FLOAT_LIT ); }
+{identifier}    { return consume_parse( Parser.IDENT     ); }
+{linecomment}   {        consume_parse( SKIP             ); }
+{newline}       {        consume_parse( SKIP             ); }
+{whitespace}    {        consume_parse( SKIP             ); }
+{blockcomment}  {        consume_parse( SKIP             ); }
 
 
 \b     { System.err.println("Sorry, backspace doesn't work"); }
 
 /* error fallback */
-[^]    { System.err.println("Error: unexpected character '"+yytext()+"'"); return -1; }
+[^]    { return consume_parse( -1 ); }
