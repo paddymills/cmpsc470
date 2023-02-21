@@ -25,6 +25,17 @@
     this.lineno = 1;
     this.column = 1;
   }
+
+  private int consume_parse(int parse_code) {
+    if ( parse_code > -1 )
+      parser.yylval = new ParserVal( (Object) yytext() ) ;
+
+    // else, consume text
+    else  
+      System.out.print( yytext() );
+    
+    return parse_code;
+  }
 %}
 
 op          = [+\-*\/]|and|or|not
@@ -57,7 +68,6 @@ blockcomment= "#{"(.|\n)*"}#"
 "continue"                          { parser.yylval = new ParserVal((Object)yytext()); return Parser.CONTINUE; }
 "true"                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL_LIT; }
 "false"                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL_LIT; }
-
 "{"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.BEGIN   ; }
 "}"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.END     ; }
 "("                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.LPAREN  ; }
@@ -70,19 +80,14 @@ blockcomment= "#{"(.|\n)*"}#"
 "&"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.ADDR    ; }
 "<-"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.ASSIGN  ; }
 "->"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.FUNCRET ; }
-
-
 {op}                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.OP      ; }
 {relop}                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.RELOP   ; }
-
 {int}                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.INT_LIT ; }
 {identifier}                        { parser.yylval = new ParserVal((Object)yytext()); return Parser.IDENT   ; }
 {linecomment}                       { System.out.print  (yytext()                           ); /* skip */ }
-{newline}                           { System.out.println("       "                          ); /* skip */ }
+{newline}                           { System.out.print  (yytext()                           ); /* skip */ }
 {whitespace}                        { System.out.print  (yytext()                           ); /* skip */ }
-{blockcomment}                      { System.out.println("block comment begin \""           );
-                                      System.out.println(yytext()                           );
-                                      System.out.println("\" block comment end"             ); /* skip */ }
+{blockcomment}                      { System.out.print  (yytext()                           ); /* skip */ }
 
 
 \b     { System.err.println("Sorry, backspace doesn't work"); }
