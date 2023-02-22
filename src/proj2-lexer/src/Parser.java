@@ -78,26 +78,27 @@ public class Parser
                 
 
             // print `<{token name}`
-            System.out.print("<" + get_token_name(token));
+            System.out.print("<" + get_token_name(token) + ", ");
 
             switch (token) {
                 case BOOL_LIT:
                 case INT_LIT:
                 case FLOAT_LIT:
-                case OP:
                 case RELOP:
-                    System.out.print(", attr:\"" + attr + "\"");
+                    System.out.print("attr:\"" + attr + "\", ");
+                    break;
+
+                case OP:
+                    System.out.print("attr:\"" + attr + "\" , ");
                     break;
 
                 case IDENT:
-                    System.out.print(", attr:sym-id:" + symbol_table_id);
+                    System.out.print("attr:sym-id:" + symbol_table_id + ", ");
                     break;
             }
 
             // print `, {line}:{column}>`
-            System.out.print(", " + lexer.lineno + ":" + lexer.column +">");
-            
-            // System.out.print("<token-id:" + token + ", token-attr:" + attr + ", lineno:" + lexer.lineno + ", col:" + lexer.column + ">");
+            System.out.print(lexer.lineno + ":" + lexer.column +">");
         }
     }
 
