@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run jflex
-jflex -d src src/Lexer.flex
+java -jar jflex-1.6.1.jar --skel src/skeleton.nested --nobak -d src src/Lexer.flex
 
 # compile source into bin directory
 javac -d bin src/*.java
@@ -12,16 +12,16 @@ if [ $# -eq 0 ]; then
     for i in {1..6}; do
         # java -cp bin Program test/test$i.minc
         echo "File: test$i"
-        diff -ywqs --suppress-common-lines <(java -cp bin Program test/test$i.minc) test/solu$i.txt
+        diff -yZqs --suppress-common-lines <(java -cp bin Program test/test$i.minc) test/solu$i.txt
     done;
 
 
     echo "File: testprepros"
-    diff -ywqs --suppress-common-lines <(java -cp bin Program test/testprepros.minc) test/soluprepros.txt
+    diff -yZqs --suppress-common-lines <(java -cp bin Program test/testprepros.minc) test/soluprepros.txt
 else
     # run Program entrypoint using given test name
     # java -cp bin Program test/test$1.minc
-    diff --color=always <(java -cp bin Program test/test$1.minc) test/solu$1.txt
+    diff --color=always -Z <(java -cp bin Program test/test$1.minc) test/solu$1.txt
 fi
 
 
