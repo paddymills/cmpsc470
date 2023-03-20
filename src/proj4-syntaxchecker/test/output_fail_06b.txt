@@ -1,0 +1,2 @@
+Error: There is syntax error(s).
+an identifier is expected instead of "while" at 11:7.

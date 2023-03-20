@@ -1,0 +1,20 @@
+func main(int a)->int
+{
+    var int x ;
+    x <- x + 1;
+    while (1 = 2 ) { {
+        var int y  ;
+        x <- x + 2;
+    } }
+}
+
+func main(int a)
+{
+    var int x ;
+    x <- x + 1;
+    while 1 = 2 {
+        var int y  ;
+        x <- x + 2;
+    }
+}
+

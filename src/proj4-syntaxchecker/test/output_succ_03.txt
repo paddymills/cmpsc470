@@ -1,0 +1,15 @@
+Success: no syntax error is found.
+
+Following is the indentation-updated source code:
+=================================================
+func main(int a)->int
+{
+    var int x;
+    x <- x+1;
+    if( 1 )
+        x <- x+2;
+    else
+        {
+            x <- x+2;
+        }
+}

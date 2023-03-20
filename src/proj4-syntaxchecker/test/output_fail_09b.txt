@@ -1,0 +1,2 @@
+Error: There is syntax error(s).
+Incorrect declaration of a local variable at 8:13.

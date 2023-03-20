@@ -1,0 +1,7 @@
+func main(int a)->int
+{
+    var int x ;
+    x <- elemof x[1 + 1;
+    int[] y;
+}
+

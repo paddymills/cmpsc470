@@ -1,0 +1,14 @@
+func main()->int 
+{
+    var int x ;
+    x <- x + 1;
+    while( (1 = 2)=3 ) { {
+        var int y ;
+        var int [] y ;
+        x <- call x ( 1, 2, 3, 4, 5 ) + (2 + 3)*(4 + 5 * 6 );
+        if( ( true ) )  {
+} else {
+        }
+    } }
+}
+

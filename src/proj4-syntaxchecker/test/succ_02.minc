@@ -1,0 +1,2 @@
+func main(int a               ) -> int  {   var  int x ;     x <-x+1; }
+

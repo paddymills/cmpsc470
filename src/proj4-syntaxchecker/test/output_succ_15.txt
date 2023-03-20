@@ -1,0 +1,59 @@
+Success: no syntax error is found.
+
+Following is the indentation-updated source code:
+=================================================
+func main()->int
+{
+    var int x;
+    x <- x+1;
+    while( (1=2)=3 )
+        {
+        }
+    {
+        var int y;
+        var int y;
+        x <- call x(1,2,3,4,5)+(2+3)*(4+5*6);
+        if( true and false )
+            {
+                {
+                    var int xyz;
+                }
+                if( false or false )
+                    {
+                        {
+                            var int xyz;
+                        }
+                        if( 1 )
+                            {
+                            }
+                        else
+                            {
+                            }
+                    }
+                else
+                    if( 1 )
+                        {
+                        }
+                    else
+                        {
+                        }
+            }
+        else
+            {
+                if( 1 )
+                    if( 1 )
+                        {
+                        }
+                    else
+                        {
+                        }
+                else
+                    if( 1 )
+                        {
+                        }
+                    else
+                        {
+                        }
+            }
+    }
+}

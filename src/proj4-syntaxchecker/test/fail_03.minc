@@ -1,0 +1,9 @@
+func main(int a)->int
+{
+    var int x ;
+    x <- x + 1;
+    if (1 ){
+        x <- x + 2;
+    }
+}
+
