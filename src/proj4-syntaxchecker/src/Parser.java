@@ -6,20 +6,57 @@ public class Parser
     public static final int ENDMARKER   =  0;
     public static final int LEXERROR    =  1;
 
-    public static final int INT         = 11;
-    public static final int PTR         = 12;
-    public static final int BEGIN       = 13;
-    public static final int END         = 14;
-    public static final int LPAREN      = 15;
-    public static final int RPAREN      = 16;
-    public static final int ASSIGN      = 17;
-    public static final int EXPROP      = 18;
-    public static final int TERMOP      = 19;
-    public static final int SEMI        = 20;
-    public static final int INT_LIT     = 21;
-    public static final int IDENT       = 22;
-    public static final int FUNCRET     = 23;
-    public static final int FUNC        = 24;
+    // --- Original set from startup ---
+    // public static final int INT         = 11;
+    // public static final int PTR         = 12;
+    // public static final int BEGIN       = 13;
+    // public static final int END         = 14;
+    // public static final int LPAREN      = 15;
+    // public static final int RPAREN      = 16;
+    // public static final int ASSIGN      = 17;
+    // public static final int EXPROP      = 18;
+    // public static final int TERMOP      = 19;
+    // public static final int SEMI        = 20;
+    // public static final int INT_LIT     = 21;
+    // public static final int IDENT       = 22;
+    // public static final int FUNCRET     = 23;
+    // public static final int FUNC        = 24;
+
+    // my re-do
+    public static final int FUNC            = 11;
+    public static final int CALL            = 12;
+    public static final int RETURN          = 13;
+    public static final int VAR             = 14;
+    public static final int IF              = 15;
+    public static final int ELSE            = 16;
+    public static final int WHILE           = 17;
+    public static final int PRINT           = 18;
+    public static final int SIZEOF          = 19;
+    public static final int ELEMOF          = 20;
+    public static final int BEGIN           = 21;
+    public static final int END             = 22;
+    public static final int LPAREN          = 23;
+    public static final int RPAREN          = 24;
+    public static final int LBRACKET        = 25;
+    public static final int RBRACKET        = 26;
+    public static final int INT             = 27;
+    public static final int BOOL            = 28;
+    public static final int NEW             = 29;
+    public static final int ASSIGN          = 30;
+    public static final int FUNCRET         = 31;
+    public static final int RELOP           = 32;
+    public static final int EXPROP          = 33;
+    public static final int TERMOP          = 34;
+    public static final int SEMI            = 35;
+    public static final int COMMA           = 36;
+    public static final int DOT             = 37;
+    public static final int BOOL_LIT        = 38;
+    public static final int INT_LIT         = 39;
+    public static final int IDENT           = 40;
+    public static final int COMMENT         = 41;
+    public static final int NEWLINE         = 42;
+    public static final int WHITESPACE      = 43;
+    public static final int BLKCOMMENT      = 44;
 
     public class Token
     {
