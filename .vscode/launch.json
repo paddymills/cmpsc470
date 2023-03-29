@@ -16,7 +16,7 @@
             "request": "launch",
             "mainClass": "Program",
             "projectName": "cmpsc470_e51b16f2",
-            "args": "${workspaceFolder}/src/proj4-syntaxchecker/test/succ_01.minc"
+            "args": "${workspaceFolder}/src/proj4-syntaxchecker/test/fail_01b.minc"
         }
     ]
 }

@@ -13,7 +13,7 @@ if [ $# -eq 0 ]; then
         if [[ $f == *.minc ]];
         then
             # java -cp bin Program test/test$i.minc
-            echo "File: $f"
+            # echo "File: $f"
             diff -yZqs --suppress-common-lines <(java -cp bin Program $f) test/output_$(basename ${f%.*}).txt
         fi
     done;

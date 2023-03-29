@@ -107,7 +107,7 @@ public class Parser
             lexeme = (String)_token.attr.obj;
 
         if(match == false)                          // if token does not match
-            throw new Exception("\"" + expected_token(token_type) + "\" is expected instead of \"" + expected_token(_token.type) + "\" at " + (_lexer.lineno+1) + ":" + _lexer.column + ".");  // throw exception (indicating parsing error in this assignment)
+            throw new Exception(expected_token(token_type) + " is expected instead of " + expected_token(_token.type) + "");  // throw exception (indicating parsing error in this assignment)
 
         if(_token.type != ENDMARKER)    // if token is not endmarker,
             Advance();                  // make token point next token in input by calling Advance()
@@ -124,10 +124,62 @@ public class Parser
         }
         catch(Exception e)
         {
-            _errormsg = e.getMessage();
+            _errormsg = e.getMessage() + " at " + parse_location() + ".";
             return -1;
         }
     }
+    private String expected_token(int token) {
+        if ( token == FUNC      ) return "\"func\"";
+        if ( token == CALL      ) return "\"call\"";
+        if ( token == RETURN    ) return "\"return\"";
+        if ( token == VAR       ) return "\"var\"";
+        if ( token == IF        ) return "\"if\"";
+        if ( token == ELSE      ) return "\"else\"";
+        if ( token == WHILE     ) return "\"while\"";
+        if ( token == PRINT     ) return "\"print\"";
+        if ( token == SIZEOF    ) return "\"sizeof\"";
+        if ( token == ELEMOF    ) return "\"elemof\"";
+        if ( token == BEGIN     ) return "\"{\"";
+        if ( token == END       ) return "\"}\"";
+        if ( token == LPAREN    ) return "\"(\"";
+        if ( token == RPAREN    ) return "\"}\"";
+        if ( token == LBRACKET  ) return "\"[\"";
+        if ( token == RBRACKET  ) return "\"]\"";
+        if ( token == INT       ) return "\"int\"";
+        if ( token == BOOL      ) return "\"bool\"";
+        if ( token == NEW       ) return "\"new\"";
+        if ( token == ASSIGN    ) return "\"<-\"";
+        if ( token == FUNCRET   ) return "\"->\"";
+        if ( token == RELOP     ) return "one of <, >, <=, >=, =, or !=";
+        if ( token == EXPROP    ) return "one of +, =, or \"or\"";
+        if ( token == TERMOP    ) return "one of *, /, or \"and\"";
+        if ( token == SEMI      ) return "\";\"";
+        if ( token == COMMA     ) return "\",\"";
+        if ( token == DOT       ) return "\".\"";
+        if ( token == BOOL_LIT  ) return "a boolean";
+        if ( token == INT_LIT   ) return "an integer";
+        if ( token == IDENT     ) return "an identifier";
+
+        // not needed as long as this gets called only from a keyword match
+        return "unknown token with ID " + token;
+    }
+
+    private boolean is_skip_lexeme(int token) {
+        if (
+            token == COMMENT ||
+            token == NEWLINE ||
+            token == WHITESPACE ||
+            token == BLKCOMMENT
+        )
+            return true;
+
+        return false;
+    }
+
+    public String parse_location() {
+        return _lexer.lineno + ":" + _lexer.column;
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //      program -> decl_list
     //    decl_list -> decl_list'
@@ -150,7 +202,7 @@ public class Parser
             case ENDMARKER:
             {
                 List<ParseTree.FuncDecl> funcs = decl_list();
-                String v1 = Match(ENDMARKER);
+                                                 Match(ENDMARKER);
                 return new ParseTree.Program(funcs);
             }
         }
@@ -165,7 +217,7 @@ public class Parser
             case ENDMARKER:
                 return decl_list_();
         }
-        throw new Exception("ParseTree decl_list error");
+        throw new Exception("Incorrect function declarations");
     }
     public List<ParseTree.FuncDecl> decl_list_() throws Exception
     {
@@ -182,7 +234,7 @@ public class Parser
             case ENDMARKER:
                 return new ArrayList<ParseTree.FuncDecl>();
         }
-        throw new Exception("error 3");
+        throw new Exception("Incorrect function declarations");
     }
     public ParseTree.FuncDecl fun_decl() throws Exception
     {
@@ -205,7 +257,7 @@ public class Parser
                 return new ParseTree.FuncDecl(v02,v07,v04,v09,v10);
             }
         }
-        throw new Exception("error 4");
+        throw new Exception("Incorrect function declaration");
     }
     public List<ParseTree.Param> params() throws Exception
     {
@@ -218,7 +270,7 @@ public class Parser
             case BOOL:
                 return param_list();
         }
-        throw new Exception("error 5");
+        throw new Exception("Incorrect parameter format of a function");
     }
 
     public List<ParseTree.Param> param_list() throws Exception
@@ -235,7 +287,7 @@ public class Parser
                 return p2;
             }
         }
-        throw new Exception("error 6");
+        throw new Exception("Incorrect parameter format of a function");
     }
     public List<ParseTree.Param> param_list_() throws Exception
     {
@@ -253,7 +305,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Param>();
         }
-        throw new Exception("error 7");
+        throw new Exception("Incorrect parameter format of a function");
     }
     public ParseTree.Param param() throws Exception
     {
@@ -268,7 +320,7 @@ public class Parser
                 return new ParseTree.Param(id, ts);
             }
         }
-        throw new Exception("error 8");
+        throw new Exception("Incorrect parameter");
     }
     public ParseTree.TypeSpec type_spec() throws Exception
     {
@@ -283,7 +335,7 @@ public class Parser
                 return new ParseTree.TypeSpec(pt, ts);
             }
         }
-        throw new Exception("error 9");
+        throw new Exception("Incorrect type specification");
     }
     public ParseTree.TypeSpec_ type_spec_() throws Exception
     {
@@ -297,8 +349,7 @@ public class Parser
             case IDENT:
                 return new ParseTree.TypeSpec_Value();
         }
-        // return TypeSpec_Value or TypeSpec_Array
-        throw new Exception("error 10");
+        throw new Exception("Incorrect type specification");
     }
 
     public ParseTree.PrimType prim_type() throws Exception
@@ -317,7 +368,7 @@ public class Parser
                 return new ParseTree.PrimTypeBool();
             }
         }
-        throw new Exception("error 11");
+        throw new Exception("Incorrect primitive type");
     }
     public List<ParseTree.LocalDecl> local_decls() throws Exception
     {
@@ -334,7 +385,7 @@ public class Parser
             case IDENT:
                 return local_decls_();
         }
-        throw new Exception("error 12");
+        throw new Exception("Incorrect declaration of a local variable");
     }
     public List<ParseTree.LocalDecl> local_decls_() throws Exception
     {
@@ -357,7 +408,7 @@ public class Parser
             case IDENT:
                 return new ArrayList<ParseTree.LocalDecl>();
         }
-        throw new Exception("error 13");
+        throw new Exception("Incorrect declaration of a local variable");
     }
     public ParseTree.LocalDecl local_decl() throws Exception
     {
@@ -374,7 +425,7 @@ public class Parser
                 return new ParseTree.LocalDecl(id, ts);
             }
         }
-        throw new Exception("error 14");
+        throw new Exception("Incorrect declaration of a local variable");
     }
     public List<ParseTree.Stmt> stmt_list() throws Exception
     {
@@ -390,7 +441,7 @@ public class Parser
             case IDENT:
                 return stmt_list_();
         }
-        throw new Exception("error 15");
+        throw new Exception("Incorrect statement");
     }
     public List<ParseTree.Stmt> stmt_list_() throws Exception
     {
@@ -412,7 +463,7 @@ public class Parser
             case END:
                 return new ArrayList<ParseTree.Stmt>();
         }
-        throw new Exception("error 16");
+        throw new Exception("Incorrect statement");
     }
 
     public ParseTree.Stmt stmt() throws Exception
@@ -433,7 +484,7 @@ public class Parser
             case IDENT:
                 return assign_stmt();
         }
-        throw new Exception("error 17");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtAssign assign_stmt() throws Exception
     {
@@ -450,7 +501,7 @@ public class Parser
                 return new ParseTree.StmtAssign(id, expr);
             }
         }
-        throw new Exception("error 18");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtPrint print_stmt() throws Exception
     {
@@ -467,7 +518,7 @@ public class Parser
             }
 
         }
-        throw new Exception("error 19");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtReturn return_stmt() throws Exception
     {
@@ -483,7 +534,7 @@ public class Parser
                 return new ParseTree.StmtReturn(expr);
             }
         }
-        throw new Exception("error 20");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtIf if_stmt() throws Exception
     {
@@ -503,7 +554,7 @@ public class Parser
                 return new ParseTree.StmtIf(expr, s1, s2);
             }
         }
-        throw new Exception("error 21");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtWhile while_stmt() throws Exception
     {
@@ -521,7 +572,7 @@ public class Parser
                 return new ParseTree.StmtWhile(expr, stmt);
             }
         }
-        throw new Exception("error 22");
+        throw new Exception("Incorrect statement");
     }
     public ParseTree.StmtCompound compound_stmt() throws Exception
     {
@@ -538,7 +589,7 @@ public class Parser
                 return new ParseTree.StmtCompound(ld, sl);
             }
         }
-        throw new Exception("error 23");
+        throw new Exception("Incorrect statement");
     }
     public List<ParseTree.Arg> args() throws Exception
     {
@@ -557,7 +608,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Arg>();
         }
-        throw new Exception("error 24");
+        throw new Exception("Incorrect argument format");
     }
     public List<ParseTree.Arg> arg_list() throws Exception
     {
@@ -580,7 +631,7 @@ public class Parser
                 return al;
             }
         }
-        throw new Exception("error 25");
+        throw new Exception("Incorrect argument format");
     }
     public List<ParseTree.Arg> arg_list_() throws Exception
     {
@@ -599,7 +650,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Arg>();
         }
-        throw new Exception("error 26");
+        throw new Exception("Incorrect argument format");
     }
     public ParseTree.Expr expr() throws Exception
     {
@@ -621,7 +672,7 @@ public class Parser
                 return new ParseTree.Expr(term, expr);
             }
         }
-        throw new Exception("error 27");
+        throw new Exception("Incorrect expression");
     }
     public ParseTree.Expr_ expr_() throws Exception
     {
@@ -644,12 +695,13 @@ public class Parser
 
                 return new ParseTree.Expr_(exprop, term, expr);
             }
-
+            case COMMA:
             case RPAREN:
+            case RBRACKET:
             case SEMI:
                 return null;
         }
-        throw new Exception("error 28");
+        throw new Exception("Incorrect expression");
     }
     public ParseTree.Term term() throws Exception
     {
@@ -672,7 +724,7 @@ public class Parser
             }
 
         }
-        throw new Exception("error 29");
+        throw new Exception("Incorrect expression");
     }
     public ParseTree.Term_ term_() throws Exception
     {
@@ -687,12 +739,15 @@ public class Parser
     
                 return new ParseTree.Term_(termop, factor, term);
             }
+            case COMMA:
             case RELOP:
             case EXPROP:
             case SEMI:
+            case RPAREN:
+            case RBRACKET:
                 return null;
         }
-        throw new Exception("error 30");
+        throw new Exception("Incorrect expression");
     }
     public ParseTree.Factor factor() throws Exception
     {
@@ -761,54 +816,6 @@ public class Parser
                 return new ParseTree.FactorIdent( Match(IDENT) );
         }
         // returns FactorParen or FactorIdent or FactorIntLit or ... or FactorSizeof
-        throw new Exception("ParseTree factor error");
-    }
-
-    private String expected_token(int token) {
-        if ( token == FUNC      ) return "func";
-        if ( token == CALL      ) return "call";
-        if ( token == RETURN    ) return "return";
-        if ( token == VAR       ) return "var";
-        if ( token == IF        ) return "if";
-        if ( token == ELSE      ) return "else";
-        if ( token == WHILE     ) return "while";
-        if ( token == PRINT     ) return "print";
-        if ( token == SIZEOF    ) return "sizeof";
-        if ( token == ELEMOF    ) return "elemof";
-        if ( token == BEGIN     ) return "{";
-        if ( token == END       ) return "}";
-        if ( token == LPAREN    ) return "(";
-        if ( token == RPAREN    ) return "}";
-        if ( token == LBRACKET  ) return "[";
-        if ( token == RBRACKET  ) return "]";
-        if ( token == INT       ) return "int";
-        if ( token == BOOL      ) return "bool";
-        if ( token == NEW       ) return "new";
-        if ( token == ASSIGN    ) return "<-";
-        if ( token == FUNCRET   ) return "->";
-        if ( token == RELOP     ) return "one of <|>|<=|>=|=|!=";
-        if ( token == EXPROP    ) return "one of +,=,or";
-        if ( token == TERMOP    ) return "*,/,and";
-        if ( token == SEMI      ) return ";";
-        if ( token == COMMA     ) return ",";
-        if ( token == DOT       ) return ".";
-        if ( token == BOOL_LIT  ) return "true or false";
-        if ( token == INT_LIT   ) return "an integer";
-        if ( token == IDENT     ) return "{identifier}";
-
-        // not needed as long as this gets called only from a keyword match
-        return "unknown token with ID " + token;
-    }
-
-    private boolean is_skip_lexeme(int token) {
-        if (
-            token == COMMENT ||
-            token == NEWLINE ||
-            token == WHITESPACE ||
-            token == BLKCOMMENT
-        )
-            return true;
-
-        return false;
+        throw new Exception("Incorrect expression");
     }
 }
