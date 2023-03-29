@@ -87,8 +87,10 @@ public class Parser
     public void Advance() throws Exception
     {
         int token_type = _lexer.yylex();                                    // get next/first token from lexer
+
         if(token_type ==  0)      _token = new Token(ENDMARKER , null);     // if  0 => token is endmarker
         else if(token_type == -1) _token = new Token(LEXERROR  , yylval);   // if -1 => there is a lex error
+        else if(token_type >= COMMENT) Advance();
         else                      _token = new Token(token_type, yylval);   // otherwise, set up _token
     }
 
@@ -138,9 +140,11 @@ public class Parser
         {
             case FUNC:
             case ENDMARKER:
+            {
                 List<ParseTree.FuncDecl> funcs = decl_list();
                 String v1 = Match(ENDMARKER);
                 return new ParseTree.Program(funcs);
+            }
         }
         throw new Exception("error 1");
     }
@@ -159,10 +163,12 @@ public class Parser
         switch(_token.type)
         {
             case FUNC:
+            {
                 ParseTree.FuncDecl       v1 = fun_decl  ();
                 List<ParseTree.FuncDecl> v2 = decl_list_();
                 v2.add(0, v1);
                 return v2;
+            }
             case ENDMARKER:
                 return new ArrayList<ParseTree.FuncDecl>();
         }
@@ -173,6 +179,7 @@ public class Parser
         switch(_token.type)
         {
             case FUNC:
+            {
                                                 Match(FUNC)   ;
                 String                    v02 = Match(IDENT)  ;
                                                 Match(LPAREN) ;
@@ -185,6 +192,7 @@ public class Parser
                 List<ParseTree.Stmt>      v10 = stmt_list()   ;
                                                 Match(END)    ;
                 return new ParseTree.FuncDecl(v02,v07,v04,v09,v10);
+            }
         }
         throw new Exception("error 4");
     }
@@ -345,7 +353,7 @@ public class Parser
                 return new ParseTree.LocalDecl(id, ts);
             }
         }
-        throw new Exception("error14");
+        throw new Exception("error 14");
     }
     public List<ParseTree.Stmt> stmt_list() throws Exception
     {

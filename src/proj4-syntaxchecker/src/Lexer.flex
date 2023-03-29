@@ -62,11 +62,8 @@ blockcomment= "#{"[^]*"}#"
 "]"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.RBRACKET; }
 "->"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.FUNCRET; }
 "<-"                                { parser.yylval = new ParserVal((Object)yytext()); return Parser.ASSIGN ; }
-"+"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.EXPROP ; }
-"*"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.TERMOP ; }
 ";"                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.SEMI   ; }
 ","                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.COMMA  ; }
-"."                                 { parser.yylval = new ParserVal((Object)yytext()); return Parser.DOT    ; }
 
 {relop}                             { parser.yylval = new ParserVal((Object)yytext()); return Parser.RELOP  ; }
 {termop}                            { parser.yylval = new ParserVal((Object)yytext()); return Parser.TERMOP ; }
@@ -74,10 +71,10 @@ blockcomment= "#{"[^]*"}#"
 {int}                               { parser.yylval = new ParserVal((Object)yytext()); return Parser.INT_LIT; }
 {bool}                              { parser.yylval = new ParserVal((Object)yytext()); return Parser.BOOL_LIT; }
 {identifier}                        { parser.yylval = new ParserVal((Object)yytext()); return Parser.IDENT  ; }
-{linecomment}                       { /* skip */ }
-{newline}                           { /* skip */ }
-{whitespace}                        { /* skip */ }
-{blockcomment}                      { /* skip */ }
+{linecomment}                       { parser.yylval = new ParserVal((Object)yytext()); return Parser.COMMENT; /* skip */ }
+{newline}                           { parser.yylval = new ParserVal((Object)yytext()); return Parser.NEWLINE; /* skip */ }
+{whitespace}                        { parser.yylval = new ParserVal((Object)yytext()); return Parser.WHITESPACE; /* skip */ }
+{blockcomment}                      { parser.yylval = new ParserVal((Object)yytext()); return Parser.BLKCOMMENT; /* skip */ }
 
 
 \b     { System.err.println("Sorry, backspace doesn't work"); }

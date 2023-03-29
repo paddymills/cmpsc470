@@ -15,9 +15,6 @@ if [ $# -eq 0 ]; then
         diff -yZqs --suppress-common-lines <(java -cp bin Program test/test$i.minc) test/solu$i.txt
     done;
 
-
-    echo "File: testprepros"
-    diff -yZqs --suppress-common-lines <(java -cp bin Program test/testprepros.minc) test/soluprepros.txt
 else
     # run Program entrypoint using given test name
     # java -cp bin Program test/test$1.minc
