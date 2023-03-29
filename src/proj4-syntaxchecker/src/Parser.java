@@ -6,6 +6,8 @@ public class Parser
     public static final int ENDMARKER   =  0;
     public static final int LEXERROR    =  1;
 
+    public static final boolean DEBUG = false;
+
     // --- Original set from startup ---
     // public static final int INT         = 11;
     // public static final int PTR         = 12;
@@ -86,11 +88,14 @@ public class Parser
 
     public void Advance() throws Exception
     {
-        int token_type = _lexer.yylex();                                    // get next/first token from lexer
+        int token_type;
+        do {
+            token_type = _lexer.yylex();                                    // get next/first token from lexer
+            // System.out.println("[" + token_type + "] " + yylval.obj);
+        } while ( is_skip_lexeme(token_type) ); // loop while getting whitespace or comments
 
         if(token_type ==  0)      _token = new Token(ENDMARKER , null);     // if  0 => token is endmarker
         else if(token_type == -1) _token = new Token(LEXERROR  , yylval);   // if -1 => there is a lex error
-        else if(token_type >= COMMENT) Advance();
         else                      _token = new Token(token_type, yylval);   // otherwise, set up _token
     }
 
@@ -98,6 +103,8 @@ public class Parser
     {
         boolean match = (token_type == _token.type);
         String lexeme = "";
+        if ( _token.attr != null )
+            lexeme = (String)_token.attr.obj;
 
         if(match == false)                          // if token does not match
             throw new Exception("\"" + expected_token(token_type) + "\" is expected instead of \"" + expected_token(_token.type) + "\" at " + (_lexer.lineno+1) + ":" + _lexer.column + ".");  // throw exception (indicating parsing error in this assignment)
@@ -136,6 +143,7 @@ public class Parser
 
     public ParseTree.Program program() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.program: " + _token.type);
         switch(_token.type)
         {
             case FUNC:
@@ -146,20 +154,22 @@ public class Parser
                 return new ParseTree.Program(funcs);
             }
         }
-        throw new Exception("error 1");
+        throw new Exception("ParseTree program error");
     }
     public List<ParseTree.FuncDecl> decl_list() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.decl_list: " + _token.type);
         switch(_token.type)
         {
             case FUNC:
             case ENDMARKER:
                 return decl_list_();
         }
-        throw new Exception("error 2");
+        throw new Exception("ParseTree decl_list error");
     }
     public List<ParseTree.FuncDecl> decl_list_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.decl_list_: " + _token.type);
         switch(_token.type)
         {
             case FUNC:
@@ -176,6 +186,7 @@ public class Parser
     }
     public ParseTree.FuncDecl fun_decl() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.fun_decl: " + _token.type);
         switch(_token.type)
         {
             case FUNC:
@@ -198,6 +209,7 @@ public class Parser
     }
     public List<ParseTree.Param> params() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.params: " + _token.type);
         switch(_token.type)
         {
             case RPAREN:
@@ -211,6 +223,7 @@ public class Parser
 
     public List<ParseTree.Param> param_list() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.param_list: " + _token.type);
         switch(_token.type)
         {
             case INT:
@@ -226,6 +239,7 @@ public class Parser
     }
     public List<ParseTree.Param> param_list_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.param_list_: " + _token.type);
         switch(_token.type)
         {
             case COMMA:
@@ -243,6 +257,7 @@ public class Parser
     }
     public ParseTree.Param param() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.param: " + _token.type);
         switch(_token.type)
         {
             case INT:
@@ -257,6 +272,7 @@ public class Parser
     }
     public ParseTree.TypeSpec type_spec() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.type_spec: " + _token.type);
         switch(_token.type)
         {
             case INT:
@@ -271,6 +287,7 @@ public class Parser
     }
     public ParseTree.TypeSpec_ type_spec_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.type_spec_: " + _token.type);
         switch(_token.type)
         {
             case LBRACKET:
@@ -286,6 +303,7 @@ public class Parser
 
     public ParseTree.PrimType prim_type() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.prim_type: " + _token.type);
         switch(_token.type)
         {
             case INT:
@@ -303,6 +321,7 @@ public class Parser
     }
     public List<ParseTree.LocalDecl> local_decls() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.local_decls: " + _token.type);
         switch(_token.type)
         {
             case RETURN:
@@ -319,6 +338,7 @@ public class Parser
     }
     public List<ParseTree.LocalDecl> local_decls_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.local_decls_: " + _token.type);
         switch(_token.type)
         {
             case VAR:
@@ -341,6 +361,7 @@ public class Parser
     }
     public ParseTree.LocalDecl local_decl() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.local_decl: " + _token.type);
         switch(_token.type)
         {
             case VAR:
@@ -357,6 +378,7 @@ public class Parser
     }
     public List<ParseTree.Stmt> stmt_list() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.stmt_list: " + _token.type);
         switch(_token.type)
         {
             case RETURN:
@@ -372,6 +394,7 @@ public class Parser
     }
     public List<ParseTree.Stmt> stmt_list_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.stmt_list_: " + _token.type);
         switch(_token.type)
         {
             case RETURN:
@@ -394,6 +417,7 @@ public class Parser
 
     public ParseTree.Stmt stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.stmt: " + _token.type);
         switch(_token.type)
         {
             case RETURN:
@@ -413,6 +437,7 @@ public class Parser
     }
     public ParseTree.StmtAssign assign_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.assign_stmt: " + _token.type);
         switch(_token.type)
         {
             case IDENT:
@@ -429,6 +454,7 @@ public class Parser
     }
     public ParseTree.StmtPrint print_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.print_stmt: " + _token.type);
         switch(_token.type)
         {
             case PRINT:
@@ -445,6 +471,7 @@ public class Parser
     }
     public ParseTree.StmtReturn return_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.return_stmt: " + _token.type);
         switch(_token.type)
         {
             case RETURN:
@@ -460,6 +487,7 @@ public class Parser
     }
     public ParseTree.StmtIf if_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.if_stmt: " + _token.type);
         switch(_token.type)
         {
             case IF:
@@ -479,6 +507,7 @@ public class Parser
     }
     public ParseTree.StmtWhile while_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.while_stmt: " + _token.type);
         switch(_token.type)
         {
             case WHILE:
@@ -496,6 +525,7 @@ public class Parser
     }
     public ParseTree.StmtCompound compound_stmt() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.compound_stmt: " + _token.type);
         switch(_token.type)
         {
             case BEGIN:
@@ -512,6 +542,7 @@ public class Parser
     }
     public List<ParseTree.Arg> args() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.args: " + _token.type);
         switch(_token.type)
         {
             case CALL:
@@ -530,6 +561,7 @@ public class Parser
     }
     public List<ParseTree.Arg> arg_list() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.arg_list: " + _token.type);
         switch(_token.type)
         {
             case CALL:
@@ -552,6 +584,7 @@ public class Parser
     }
     public List<ParseTree.Arg> arg_list_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.arg_list: " + _token.type);
         switch(_token.type)
         {
             case COMMA:
@@ -570,6 +603,7 @@ public class Parser
     }
     public ParseTree.Expr expr() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.expr: " + _token.type);
         switch(_token.type)
         {
             case CALL:
@@ -591,6 +625,7 @@ public class Parser
     }
     public ParseTree.Expr_ expr_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.expr: " + _token.type);
         switch(_token.type)
         {
             case RELOP:
@@ -611,12 +646,14 @@ public class Parser
             }
 
             case RPAREN:
+            case SEMI:
                 return null;
         }
         throw new Exception("error 28");
     }
     public ParseTree.Term term() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.term: " + _token.type);
         switch(_token.type)
         {
             case CALL:
@@ -639,6 +676,7 @@ public class Parser
     }
     public ParseTree.Term_ term_() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.term_: " + _token.type);
         switch(_token.type)
         {
             case TERMOP:
@@ -658,6 +696,7 @@ public class Parser
     }
     public ParseTree.Factor factor() throws Exception
     {
+        if (DEBUG) System.out.println("Parser.factor: " + _token.type);
         switch(_token.type)
         {
             case CALL:
@@ -708,12 +747,21 @@ public class Parser
             case BOOL_LIT:
                 return new ParseTree.FactorBoolLit( Boolean.parseBoolean(Match(BOOL_LIT)) );
             case INT_LIT:
-                return new ParseTree.FactorIntLit( Integer.parseInt(Match(INT_LIT)) );
+            {
+                try {
+                    int val = Integer.parseInt(Match(INT_LIT));
+                    return new ParseTree.FactorIntLit( val );
+                }
+                catch (Exception e) {
+                    throw new Exception("Failed to parse int literal: " + e);
+                }
+
+            }
             case IDENT:
                 return new ParseTree.FactorIdent( Match(IDENT) );
         }
         // returns FactorParen or FactorIdent or FactorIntLit or ... or FactorSizeof
-        throw new Exception("error 31");
+        throw new Exception("ParseTree factor error");
     }
 
     private String expected_token(int token) {
@@ -750,5 +798,17 @@ public class Parser
 
         // not needed as long as this gets called only from a keyword match
         return "unknown token with ID " + token;
+    }
+
+    private boolean is_skip_lexeme(int token) {
+        if (
+            token == COMMENT ||
+            token == NEWLINE ||
+            token == WHITESPACE ||
+            token == BLKCOMMENT
+        )
+            return true;
+
+        return false;
     }
 }
