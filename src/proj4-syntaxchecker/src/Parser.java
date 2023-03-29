@@ -1,4 +1,5 @@
 import java.util.List;
+import java.security.Identity;
 import java.util.ArrayList;
 
 public class Parser
@@ -173,30 +174,18 @@ public class Parser
         switch(_token.type)
         {
             case FUNC:
-                String                    v01 = Match(FUNC)   ;
+                                                Match(FUNC)   ;
                 String                    v02 = Match(IDENT)  ;
-                String                    v03 = Match(LPAREN) ;
+                                                Match(LPAREN) ;
                 List<ParseTree.Param>     v04 = params()      ;
-                String                    v05 = Match(RPAREN) ;
-                String                    v06 = Match(FUNCRET);
+                                                Match(RPAREN) ;
+                                                Match(FUNCRET);
                 ParseTree.PrimType        v07 = prim_type()   ;
-                String                    v08 = Match(BEGIN)  ;
+                                                Match(BEGIN)  ;
                 List<ParseTree.LocalDecl> v09 = local_decls() ;
                 List<ParseTree.Stmt>      v10 = stmt_list()   ;
-                String                    v11 = Match(END)    ;
+                                                Match(END)    ;
                 return new ParseTree.FuncDecl(v02,v07,v04,v09,v10);
-        }
-        throw new Exception("error");
-    }
-    public ParseTree.PrimType prim_type() throws Exception
-    {
-        switch(_token.type)
-        {
-            case INT:
-            {
-                String v1 = Match(INT);
-                return new ParseTree.PrimTypeInt();
-            }
         }
         throw new Exception("error");
     }
@@ -206,6 +195,102 @@ public class Parser
         {
             case RPAREN:
                 return new ArrayList<ParseTree.Param>();
+            case INT:
+            case BOOL:
+                return param_list();
+        }
+        throw new Exception("error");
+    }
+
+    public List<ParseTree.Param> param_list() throws Exception
+    {
+        switch(_token.type)
+        {
+            case INT:
+            case BOOL:
+            {
+                ParseTree.Param       p1 = param();
+                List<ParseTree.Param> p2 = param_list_();
+                p2.add(0, p1);
+                return p2;
+            }
+        }
+        throw new Exception("error");
+    }
+    public List<ParseTree.Param> param_list_() throws Exception
+    {
+        switch(_token.type)
+        {
+            case COMMA:
+            {
+                Match(COMMA);
+                ParseTree.Param       p1 = param();
+                List<ParseTree.Param> p2 = param_list_();
+                p2.add(0, p1);
+                return p2;
+            }
+            case RPAREN:
+                return new ArrayList<ParseTree.Param>();
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Param param() throws Exception
+    {
+        switch(_token.type)
+        {
+            case INT:
+            case BOOL:
+            {
+                ParseTree.TypeSpec ts = type_spec();
+                String             id = Match(IDENT);
+                return new ParseTree.Param(id, ts);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.TypeSpec type_spec() throws Exception
+    {
+        switch(_token.type)
+        {
+            case INT:
+            case BOOL:
+            {
+                ParseTree.PrimType  pt = prim_type();
+                ParseTree.TypeSpec_ ts = type_spec_();
+                return new ParseTree.TypeSpec(pt, ts);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.TypeSpec_ type_spec_() throws Exception
+    {
+        switch(_token.type)
+        {
+            case LBRACKET:
+                Match(LBRACKET);
+                Match(RBRACKET);
+                return new ParseTree.TypeSpec_Array();
+            case IDENT:
+                return new ParseTree.TypeSpec_Value();
+        }
+        // return TypeSpec_Value or TypeSpec_Array
+        throw new Exception("error");
+    }
+
+    public ParseTree.PrimType prim_type() throws Exception
+    {
+        switch(_token.type)
+        {
+            case INT:
+            {
+                Match(INT);
+                return new ParseTree.PrimTypeInt();
+            }
+            case BOOL:
+            {
+                Match(BOOL);
+                return new ParseTree.PrimTypeBool();
+            }
         }
         throw new Exception("error");
     }
@@ -213,7 +298,14 @@ public class Parser
     {
         switch(_token.type)
         {
+            case RETURN:
+            case VAR:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case BEGIN:
             case END:
+            case IDENT:
                 return local_decls_();
         }
         throw new Exception("error");
@@ -222,8 +314,37 @@ public class Parser
     {
         switch(_token.type)
         {
+            case VAR:
+            {
+                ParseTree.LocalDecl       ld = local_decl();
+                List<ParseTree.LocalDecl> lds = local_decls_();
+                lds.add(0, ld);
+                return lds;
+            }
+            case RETURN:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case BEGIN:
             case END:
+            case IDENT:
                 return new ArrayList<ParseTree.LocalDecl>();
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.LocalDecl local_decl() throws Exception
+    {
+        switch(_token.type)
+        {
+            case VAR:
+            {
+                                          Match(VAR);
+                ParseTree.TypeSpec ts   = type_spec();
+                String             id   = Match(IDENT);
+                                          Match(SEMI);
+
+                return new ParseTree.LocalDecl(id, ts);
+            }
         }
         throw new Exception("error");
     }
@@ -231,7 +352,13 @@ public class Parser
     {
         switch(_token.type)
         {
+            case RETURN:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case BEGIN:
             case END:
+            case IDENT:
                 return stmt_list_();
         }
         throw new Exception("error");
@@ -240,9 +367,345 @@ public class Parser
     {
         switch(_token.type)
         {
+            case RETURN:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case BEGIN:
+            case IDENT:
+            {
+                ParseTree.Stmt       stmt  = stmt();
+                List<ParseTree.Stmt> stmts = stmt_list_();
+                stmts.add(0, stmt);
+                return stmts;
+            }
             case END:
                 return new ArrayList<ParseTree.Stmt>();
         }
+        throw new Exception("error");
+    }
+
+    public ParseTree.Stmt stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case RETURN:
+                return return_stmt();
+            case IF:
+                return if_stmt();
+            case WHILE:
+                return while_stmt();
+            case PRINT:
+                return print_stmt();
+            case BEGIN:
+                return compound_stmt();
+            case IDENT:
+                return assign_stmt();
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtAssign assign_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case IDENT:
+            {
+                String           id = Match(IDENT);
+                                      Match(ASSIGN);
+                ParseTree.Expr expr = expr();
+                                      Match(SEMI);
+
+                return new ParseTree.StmtAssign(id, expr);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtPrint print_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case PRINT:
+            {
+                                      Match(PRINT);
+                ParseTree.Expr expr = expr();
+                                      Match(SEMI);
+
+                return new ParseTree.StmtPrint(expr);
+            }
+
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtReturn return_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case RETURN:
+            {
+                                      Match(RETURN);
+                ParseTree.Expr expr = expr();
+                                      Match(SEMI);
+
+                return new ParseTree.StmtReturn(expr);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtIf if_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case IF:
+            {
+                                      Match(IF);
+                                      Match(LPAREN);
+                ParseTree.Expr expr = expr();
+                                      Match(RPAREN);
+                ParseTree.Stmt s1   = stmt();
+                                      Match(ELSE);
+                ParseTree.Stmt s2   = stmt();
+
+                return new ParseTree.StmtIf(expr, s1, s2);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtWhile while_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case WHILE:
+            {
+                                      Match(WHILE);
+                                      Match(LPAREN);
+                ParseTree.Expr expr = expr();
+                                      Match(RPAREN);
+                ParseTree.Stmt stmt = stmt();
+
+                return new ParseTree.StmtWhile(expr, stmt);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.StmtCompound compound_stmt() throws Exception
+    {
+        switch(_token.type)
+        {
+            case BEGIN:
+            {
+                                               Match(BEGIN);
+                List<ParseTree.LocalDecl> ld = local_decls();
+                List<ParseTree.Stmt>      sl = stmt_list();
+                                               Match(END);
+
+                return new ParseTree.StmtCompound(ld, sl);
+            }
+        }
+        throw new Exception("error");
+    }
+    public List<ParseTree.Arg> args() throws Exception
+    {
+        switch(_token.type)
+        {
+            case CALL:
+            case SIZEOF:
+            case ELEMOF:
+            case NEW:
+            case LPAREN:
+            case BOOL_LIT:
+            case INT_LIT:
+            case IDENT:
+                return arg_list();
+            case RPAREN:
+                return new ArrayList<ParseTree.Arg>();
+        }
+        throw new Exception("error");
+    }
+    public List<ParseTree.Arg> arg_list() throws Exception
+    {
+        switch(_token.type)
+        {
+            case CALL:
+            case SIZEOF:
+            case ELEMOF:
+            case NEW:
+            case LPAREN:
+            case BOOL_LIT:
+            case INT_LIT:
+            case IDENT:
+            {
+                ParseTree.Expr      expr = expr();
+                List<ParseTree.Arg> al   = arg_list_();
+
+                al.add(0, new ParseTree.Arg(expr));
+                return al;
+            }
+        }
+        throw new Exception("error");
+    }
+    public List<ParseTree.Arg> arg_list_() throws Exception
+    {
+        switch(_token.type)
+        {
+            case COMMA:
+            {
+                Match(COMMA);
+                ParseTree.Expr      expr = expr();
+                List<ParseTree.Arg> al   = arg_list_();
+
+                al.add(0, new ParseTree.Arg(expr));
+                return al;
+            }
+            case RPAREN:
+                return new ArrayList<ParseTree.Arg>();
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Expr expr() throws Exception
+    {
+        switch(_token.type)
+        {
+            case CALL:
+            case SIZEOF:
+            case ELEMOF:
+            case NEW:
+            case LPAREN:
+            case BOOL_LIT:
+            case INT_LIT:
+            case IDENT:
+            {
+                ParseTree.Term  term = term();
+                ParseTree.Expr_ expr = expr_();
+
+                return new ParseTree.Expr(term, expr);
+            }
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Expr_ expr_() throws Exception
+    {
+        switch(_token.type)
+        {
+            case RELOP:
+            {
+                String relop         = Match(RELOP);
+                ParseTree.Term  term = term();
+                ParseTree.Expr_ expr = expr_();
+
+                return new ParseTree.Expr_(relop, term, expr);
+            }
+            case EXPROP:
+            {
+                String exprop        = Match(EXPROP);
+                ParseTree.Term  term = term();
+                ParseTree.Expr_ expr = expr_();
+
+                return new ParseTree.Expr_(exprop, term, expr);
+            }
+
+            case RPAREN:
+                return null;
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Term term() throws Exception
+    {
+        switch(_token.type)
+        {
+            case CALL:
+            case SIZEOF:
+            case ELEMOF:
+            case NEW:
+            case LPAREN:
+            case BOOL_LIT:
+            case INT_LIT:
+            case IDENT:
+            {
+                ParseTree.Factor factor = factor();
+                ParseTree.Term_  term   = term_();
+
+                return new ParseTree.Term(factor, term);
+            }
+
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Term_ term_() throws Exception
+    {
+        switch(_token.type)
+        {
+            case TERMOP:
+            {
+                String           termop = Match(TERMOP);
+                ParseTree.Factor factor = factor();
+                ParseTree.Term_  term   = term_();
+    
+                return new ParseTree.Term_(termop, factor, term);
+            }
+            case RELOP:
+            case EXPROP:
+            case SEMI:
+                return null;
+        }
+        throw new Exception("error");
+    }
+    public ParseTree.Factor factor() throws Exception
+    {
+        switch(_token.type)
+        {
+            case CALL:
+            {
+                                        Match(CALL);
+                String id             = Match(IDENT);
+                                        Match(LPAREN);
+                List<ParseTree.Arg> a = args();
+                                        Match(RPAREN);
+
+                return new ParseTree.FactorCall(id, a);
+            }
+            case SIZEOF:
+            {
+                            Match(SIZEOF);
+                String id = Match(IDENT);
+
+                return new ParseTree.FactorSizeof(id);
+            }
+            case ELEMOF:
+            {
+                                      Match(ELEMOF);
+                String         id   = Match(IDENT);
+                                      Match(LBRACKET);
+                ParseTree.Expr expr = expr();
+                                      Match(RBRACKET);
+
+                return new ParseTree.FactorElemof(id, expr);
+            }
+            case NEW:
+            {
+                                       Match(NEW);
+                ParseTree.PrimType p = prim_type();
+                                       Match(LBRACKET);
+                ParseTree.Expr expr  = expr();
+                                       Match(RBRACKET);
+
+                return new ParseTree.FactorNew(p, expr);
+            }
+            case LPAREN:
+            {
+                                      Match(LPAREN);
+                ParseTree.Expr expr = expr();
+                                      Match(RPAREN);
+
+                return new ParseTree.FactorParen(expr);
+            }
+            case BOOL_LIT:
+                return new ParseTree.FactorBoolLit( Boolean.parseBoolean(Match(BOOL_LIT)) );
+            case INT_LIT:
+                return new ParseTree.FactorIntLit( Integer.parseInt(Match(INT_LIT)) );
+            case IDENT:
+                return new ParseTree.FactorIdent( Match(IDENT) );
+        }
+        // returns FactorParen or FactorIdent or FactorIntLit or ... or FactorSizeof
         throw new Exception("error");
     }
 }
