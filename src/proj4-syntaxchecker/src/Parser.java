@@ -1,5 +1,4 @@
 import java.util.List;
-import java.security.Identity;
 import java.util.ArrayList;
 
 public class Parser
@@ -99,7 +98,7 @@ public class Parser
         String lexeme = "";
 
         if(match == false)                          // if token does not match
-            throw new Exception("token mismatch");  // throw exception (indicating parsing error in this assignment)
+            throw new Exception("\"" + expected_token(token_type) + "\" is expected instead of \"" + expected_token(_token.type) + "\" at " + (_lexer.lineno+1) + ":" + _lexer.column + ".");  // throw exception (indicating parsing error in this assignment)
 
         if(_token.type != ENDMARKER)    // if token is not endmarker,
             Advance();                  // make token point next token in input by calling Advance()
@@ -143,7 +142,7 @@ public class Parser
                 String v1 = Match(ENDMARKER);
                 return new ParseTree.Program(funcs);
         }
-        throw new Exception("error");
+        throw new Exception("error 1");
     }
     public List<ParseTree.FuncDecl> decl_list() throws Exception
     {
@@ -153,7 +152,7 @@ public class Parser
             case ENDMARKER:
                 return decl_list_();
         }
-        throw new Exception("error");
+        throw new Exception("error 2");
     }
     public List<ParseTree.FuncDecl> decl_list_() throws Exception
     {
@@ -167,7 +166,7 @@ public class Parser
             case ENDMARKER:
                 return new ArrayList<ParseTree.FuncDecl>();
         }
-        throw new Exception("error");
+        throw new Exception("error 3");
     }
     public ParseTree.FuncDecl fun_decl() throws Exception
     {
@@ -187,7 +186,7 @@ public class Parser
                                                 Match(END)    ;
                 return new ParseTree.FuncDecl(v02,v07,v04,v09,v10);
         }
-        throw new Exception("error");
+        throw new Exception("error 4");
     }
     public List<ParseTree.Param> params() throws Exception
     {
@@ -199,7 +198,7 @@ public class Parser
             case BOOL:
                 return param_list();
         }
-        throw new Exception("error");
+        throw new Exception("error 5");
     }
 
     public List<ParseTree.Param> param_list() throws Exception
@@ -215,7 +214,7 @@ public class Parser
                 return p2;
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 6");
     }
     public List<ParseTree.Param> param_list_() throws Exception
     {
@@ -232,7 +231,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Param>();
         }
-        throw new Exception("error");
+        throw new Exception("error 7");
     }
     public ParseTree.Param param() throws Exception
     {
@@ -246,7 +245,7 @@ public class Parser
                 return new ParseTree.Param(id, ts);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 8");
     }
     public ParseTree.TypeSpec type_spec() throws Exception
     {
@@ -260,7 +259,7 @@ public class Parser
                 return new ParseTree.TypeSpec(pt, ts);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 9");
     }
     public ParseTree.TypeSpec_ type_spec_() throws Exception
     {
@@ -274,7 +273,7 @@ public class Parser
                 return new ParseTree.TypeSpec_Value();
         }
         // return TypeSpec_Value or TypeSpec_Array
-        throw new Exception("error");
+        throw new Exception("error 10");
     }
 
     public ParseTree.PrimType prim_type() throws Exception
@@ -292,7 +291,7 @@ public class Parser
                 return new ParseTree.PrimTypeBool();
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 11");
     }
     public List<ParseTree.LocalDecl> local_decls() throws Exception
     {
@@ -308,7 +307,7 @@ public class Parser
             case IDENT:
                 return local_decls_();
         }
-        throw new Exception("error");
+        throw new Exception("error 12");
     }
     public List<ParseTree.LocalDecl> local_decls_() throws Exception
     {
@@ -330,7 +329,7 @@ public class Parser
             case IDENT:
                 return new ArrayList<ParseTree.LocalDecl>();
         }
-        throw new Exception("error");
+        throw new Exception("error 13");
     }
     public ParseTree.LocalDecl local_decl() throws Exception
     {
@@ -346,7 +345,7 @@ public class Parser
                 return new ParseTree.LocalDecl(id, ts);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error14");
     }
     public List<ParseTree.Stmt> stmt_list() throws Exception
     {
@@ -361,7 +360,7 @@ public class Parser
             case IDENT:
                 return stmt_list_();
         }
-        throw new Exception("error");
+        throw new Exception("error 15");
     }
     public List<ParseTree.Stmt> stmt_list_() throws Exception
     {
@@ -382,7 +381,7 @@ public class Parser
             case END:
                 return new ArrayList<ParseTree.Stmt>();
         }
-        throw new Exception("error");
+        throw new Exception("error 16");
     }
 
     public ParseTree.Stmt stmt() throws Exception
@@ -402,7 +401,7 @@ public class Parser
             case IDENT:
                 return assign_stmt();
         }
-        throw new Exception("error");
+        throw new Exception("error 17");
     }
     public ParseTree.StmtAssign assign_stmt() throws Exception
     {
@@ -418,7 +417,7 @@ public class Parser
                 return new ParseTree.StmtAssign(id, expr);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 18");
     }
     public ParseTree.StmtPrint print_stmt() throws Exception
     {
@@ -434,7 +433,7 @@ public class Parser
             }
 
         }
-        throw new Exception("error");
+        throw new Exception("error 19");
     }
     public ParseTree.StmtReturn return_stmt() throws Exception
     {
@@ -449,7 +448,7 @@ public class Parser
                 return new ParseTree.StmtReturn(expr);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 20");
     }
     public ParseTree.StmtIf if_stmt() throws Exception
     {
@@ -468,7 +467,7 @@ public class Parser
                 return new ParseTree.StmtIf(expr, s1, s2);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 21");
     }
     public ParseTree.StmtWhile while_stmt() throws Exception
     {
@@ -485,7 +484,7 @@ public class Parser
                 return new ParseTree.StmtWhile(expr, stmt);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 22");
     }
     public ParseTree.StmtCompound compound_stmt() throws Exception
     {
@@ -501,7 +500,7 @@ public class Parser
                 return new ParseTree.StmtCompound(ld, sl);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 23");
     }
     public List<ParseTree.Arg> args() throws Exception
     {
@@ -519,7 +518,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Arg>();
         }
-        throw new Exception("error");
+        throw new Exception("error 24");
     }
     public List<ParseTree.Arg> arg_list() throws Exception
     {
@@ -541,7 +540,7 @@ public class Parser
                 return al;
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 25");
     }
     public List<ParseTree.Arg> arg_list_() throws Exception
     {
@@ -559,7 +558,7 @@ public class Parser
             case RPAREN:
                 return new ArrayList<ParseTree.Arg>();
         }
-        throw new Exception("error");
+        throw new Exception("error 26");
     }
     public ParseTree.Expr expr() throws Exception
     {
@@ -580,7 +579,7 @@ public class Parser
                 return new ParseTree.Expr(term, expr);
             }
         }
-        throw new Exception("error");
+        throw new Exception("error 27");
     }
     public ParseTree.Expr_ expr_() throws Exception
     {
@@ -606,7 +605,7 @@ public class Parser
             case RPAREN:
                 return null;
         }
-        throw new Exception("error");
+        throw new Exception("error 28");
     }
     public ParseTree.Term term() throws Exception
     {
@@ -628,7 +627,7 @@ public class Parser
             }
 
         }
-        throw new Exception("error");
+        throw new Exception("error 29");
     }
     public ParseTree.Term_ term_() throws Exception
     {
@@ -647,7 +646,7 @@ public class Parser
             case SEMI:
                 return null;
         }
-        throw new Exception("error");
+        throw new Exception("error 30");
     }
     public ParseTree.Factor factor() throws Exception
     {
@@ -706,6 +705,42 @@ public class Parser
                 return new ParseTree.FactorIdent( Match(IDENT) );
         }
         // returns FactorParen or FactorIdent or FactorIntLit or ... or FactorSizeof
-        throw new Exception("error");
+        throw new Exception("error 31");
+    }
+
+    private String expected_token(int token) {
+        if ( token == FUNC      ) return "func";
+        if ( token == CALL      ) return "call";
+        if ( token == RETURN    ) return "return";
+        if ( token == VAR       ) return "var";
+        if ( token == IF        ) return "if";
+        if ( token == ELSE      ) return "else";
+        if ( token == WHILE     ) return "while";
+        if ( token == PRINT     ) return "print";
+        if ( token == SIZEOF    ) return "sizeof";
+        if ( token == ELEMOF    ) return "elemof";
+        if ( token == BEGIN     ) return "{";
+        if ( token == END       ) return "}";
+        if ( token == LPAREN    ) return "(";
+        if ( token == RPAREN    ) return "}";
+        if ( token == LBRACKET  ) return "[";
+        if ( token == RBRACKET  ) return "]";
+        if ( token == INT       ) return "int";
+        if ( token == BOOL      ) return "bool";
+        if ( token == NEW       ) return "new";
+        if ( token == ASSIGN    ) return "<-";
+        if ( token == FUNCRET   ) return "->";
+        if ( token == RELOP     ) return "one of <|>|<=|>=|=|!=";
+        if ( token == EXPROP    ) return "one of +,=,or";
+        if ( token == TERMOP    ) return "*,/,and";
+        if ( token == SEMI      ) return ";";
+        if ( token == COMMA     ) return ",";
+        if ( token == DOT       ) return ".";
+        if ( token == BOOL_LIT  ) return "true or false";
+        if ( token == INT_LIT   ) return "an integer";
+        if ( token == IDENT     ) return "{identifier}";
+
+        // not needed as long as this gets called only from a keyword match
+        return "unknown token with ID " + token;
     }
 }
