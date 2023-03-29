@@ -9,10 +9,13 @@ javac -d bin src/*.java
 if [ $# -eq 0 ]; then
     # run all tests
 
-    for i in {1..6}; do
-        # java -cp bin Program test/test$i.minc
-        echo "File: test$i"
-        diff -yZqs --suppress-common-lines <(java -cp bin Program test/test$i.minc) test/solu$i.txt
+    for f in test/*; do
+        if [[ $f == *.minc ]];
+        then
+            # java -cp bin Program test/test$i.minc
+            echo "File: $f"
+            diff -yZqs --suppress-common-lines <(java -cp bin Program $f) test/output_$(basename ${f%.*}).txt
+        fi
     done;
 
 else
