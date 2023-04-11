@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# run jflex
+java -jar ../../bin/jflex-1.6.1.jar --nobak -d src src/Lexer.flex
+
+# run Byacc/J
+../../bin/yacc.linux -Jthrows="Exception" -Jextends=ParserImpl -Jclass=Parser -Jnorun -J Parser.y
+
+# compile source into bin directory
+javac -d bin src/*.java
+
+if [ $# -eq 0 ]; then
+    # run all tests
+
+    for f in test/minc/*; do
+        if [[ $f == *.minc ]];
+        then
+            # java -cp bin Program test/test$i.minc
+            # echo "File: $f"
+            diff -yZqs --suppress-common-lines <(java -cp bin Program $f) test/output/output_$(basename ${f%.*}).txt
+        fi
+    done;
+
+else
+    # run Program entrypoint using given test name
+    # java -cp bin Program test/test$1.minc
+    diff --color=always -Z <(java -cp bin Program test/minc/$1.minc) test/output/output_$1.txt
+fi
+
+
+# diff
+# for i in {0..8}; do
+#     result = ${java -cp bin Program "test$i"}
+#     solution = "test/testsolu$i.txt"
+#     diff --color=always --width=80 -yw --suppress-common-lines <($result) $solution
+# done;
