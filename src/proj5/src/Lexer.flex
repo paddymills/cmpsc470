@@ -12,6 +12,9 @@
 
 %class Lexer
 %byaccj
+%line
+%column
+
 
 %{
 
@@ -26,8 +29,15 @@
     this.column = 1;
   }
 
+  private void consume() {
+    parser.yylval = new ParserVal((Object)yytext());
+    lineno = yyline   + 1;
+    column = yycolumn + 1;
+  }
+
 %}
 
+bool        = true|false
 int         = [0-9]+
 identifier  = [a-zA-Z][a-zA-Z0-9_]*
 newline     = \n
@@ -37,27 +47,46 @@ blkcomment  = "#{"[^]*"}#"
 
 %%
 
-"func"                              { parser.yylval = new ParserVal(new Token(yytext())); return Parser.FUNC       ; }
-"call"                              { parser.yylval = new ParserVal(new Token(yytext())); return Parser.CALL       ; }
-"return"                            { parser.yylval = new ParserVal(new Token(yytext())); return Parser.RETURN     ; }
-"var"                               { parser.yylval = new ParserVal(new Token(yytext())); return Parser.VAR        ; }
-"{"                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.BEGIN      ; }
-"}"                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.END        ; }
-"("                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.LPAREN     ; }
-")"                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.RPAREN     ; }
-"int"                               { parser.yylval = new ParserVal(new Token(yytext())); return Parser.INT        ; }
-"print"                             { parser.yylval = new ParserVal(new Token(yytext())); return Parser.PRINT      ; }
-"<-"                                { parser.yylval = new ParserVal(new Token(yytext())); return Parser.ASSIGN     ; }
-"->"                                { parser.yylval = new ParserVal(new Token(yytext())); return Parser.FUNCRET    ; }
-"+"                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.ADD        ; }
-"="                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.EQ         ; }
-";"                                 { parser.yylval = new ParserVal(new Token(yytext())); return Parser.SEMI       ; }
-{int}                               { parser.yylval = new ParserVal(new Token(yytext())); return Parser.INT_LIT    ; }
-{identifier}                        { parser.yylval = new ParserVal(new Token(yytext())); return Parser.IDENT      ; }
-{linecomment}                       { /* skip */ }
-{newline}                           { /* skip */ }
-{whitespace}                        { /* skip */ }
-{blkcomment}                        { /* skip */ }
+"func"                              { consume(); return Parser.FUNC       ; }
+"call"                              { consume(); return Parser.CALL       ; }
+"return"                            { consume(); return Parser.RETURN     ; }
+"var"                               { consume(); return Parser.VAR        ; }
+"if"                                { consume(); return Parser.IF         ; }
+"else"                              { consume(); return Parser.ELSE       ; }
+"while"                             { consume(); return Parser.WHILE      ; }
+"int"                               { consume(); return Parser.INT        ; }
+"bool"                              { consume(); return Parser.BOOL       ; }
+"print"                             { consume(); return Parser.PRINT      ; }
+"and"                               { consume(); return Parser.AND        ; }
+"or"                                { consume(); return Parser.OR         ; }
+"not"                               { consume(); return Parser.NOT        ; }
+
+"{"                                 { consume(); return Parser.BEGIN      ; }
+"}"                                 { consume(); return Parser.END        ; }
+"("                                 { consume(); return Parser.LPAREN     ; }
+")"                                 { consume(); return Parser.RPAREN     ; }
+"<-"                                { consume(); return Parser.ASSIGN     ; }
+"->"                                { consume(); return Parser.FUNCRET    ; }
+"+"                                 { consume(); return Parser.ADD        ; }
+"-"                                 { consume(); return Parser.SUB        ; }
+"*"                                 { consume(); return Parser.MUL        ; }
+"/"                                 { consume(); return Parser.DIV        ; }
+"%"                                 { consume(); return Parser.MOD        ; }
+"<"                                 { consume(); return Parser.LT         ; }
+">"                                 { consume(); return Parser.GT         ; }
+"<="                                { consume(); return Parser.LE         ; }
+">="                                { consume(); return Parser.GE         ; }
+"="                                 { consume(); return Parser.EQ         ; }
+"!="                                { consume(); return Parser.NE         ; }
+";"                                 { consume(); return Parser.SEMI       ; }
+","                                 { consume(); return Parser.COMMA      ; }
+
+{int}                               { consume(); return Parser.INT_LIT    ; }
+{identifier}                        { consume(); return Parser.IDENT      ; }
+{linecomment}                       { consume(); return Parser.COMMENT;    /* skip */ }
+{newline}                           { consume(); return Parser.NEWLINE;    /* skip */ }
+{whitespace}                        { consume(); return Parser.WHITESPACE; /* skip */ }
+{blkcomment}                        { consume(); return Parser.BLKCOMMENT; /* skip */ }
 
 
 \b     { System.err.println("Sorry, backspace doesn't work"); }
