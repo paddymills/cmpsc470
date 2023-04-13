@@ -25,3 +25,7 @@ hs_err_pid*
 # jflex generated
 Lexer.java*
 !src/proj1-tokenizer/src/Lexer.java
+
+# yacc generated
+src/proj5/src/Parser.java
+src/proj5/src/ParserVal.java
