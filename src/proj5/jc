@@ -4,7 +4,12 @@
 java -jar ../../bin/jflex-1.6.1.jar --nobak -d src src/Lexer.flex
 
 # run Byacc/J
-../../bin/yacc.linux -Jthrows="Exception" -Jextends=ParserImpl -Jclass=Parser -Jnorun -J Parser.y
+yacc -Jthrows="Exception" -Jextends=ParserImpl -Jclass=Parser -Jnorun -J src/Parser.y
+mv Parser*.java src/
+
+if [ $1 = "-c" ]; then
+    exit 0
+fi
 
 # compile source into bin directory
 javac -d bin src/*.java
