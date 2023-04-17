@@ -10,7 +10,7 @@ public class Env
         this.prev = prev;
     }
     
-    public void Put(String name, Object value) {
+    public void put(String name, Object value) {
         // first call: initialize table HashMap
         if ( this.table == null )
             this.table = new HashMap<String, Object>();
@@ -18,7 +18,7 @@ public class Env
         this.table.put(name, value);
     }
 
-    public Object Get(String name) {
+    public Object get(String name) {
         if ( this.table != null && this.table.containsKey(name) )
             return this.table.get(name);
 
@@ -26,6 +26,15 @@ public class Env
             return this.prev.Get(name);
 
         return null;
+    }
+    public void Put(String name, Object value) {
+        // call the actual function is not named like a class
+        this.put(name, value);
+    }
+
+    public Object Get(String name) {
+        // call the actual function is not named like a class
+        return this.get(name);
 
         // this is a fake implementation
         // For the real implementation, I recommend to return a class object
