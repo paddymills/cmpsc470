@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "java",
             "name": "Current File",
@@ -17,6 +18,14 @@
             "mainClass": "Program",
             "projectName": "cmpsc470_e51b16f2",
             "args": "${workspaceFolder}/src/proj4-syntaxchecker/test/fail_01b.minc"
+        },
+        {
+            "type": "java",
+            "name": "SemanticChecker",
+            "request": "launch",
+            "mainClass": "SemanticChecker",
+            "projectName": "cmpsc470_e51b16f2",
+            "args": "${workspaceFolder}/src/proj5/test/minc/syntaxerr_03_expr2.minc"
         }
     ]
 }
