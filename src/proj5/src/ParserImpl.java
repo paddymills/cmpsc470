@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class ParserImpl {
     public static Boolean _debug = true;
 
-    void Debug(String message) {
+    public static void Debug(String message) {
         if (_debug)
             System.out.println(message);
     }
@@ -62,27 +62,42 @@ public class ParserImpl {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Object fundecl(Object id, Object parameters, Object return_type, Object locals) throws Exception {
+    Object fundecl(String id, Object parameters, Object return_type, Object locals) throws Exception {
         // 1. add function_type_info object (name, return type, params) into the global
         // scope of env
         // 2. create a new symbol table on top of env
         // 3. add parameters into top-local scope of env
         // 4. etc.
+        
+        ArrayList<ParseTree.Param> params         = (ArrayList<ParseTree.Param>) parameters;
+        ParseTree.TypeSpec rettype                = (ParseTree.TypeSpec) return_type;
+        ArrayList<ParseTree.LocalDecl> localdecls = (ArrayList<ParseTree.LocalDecl>) locals;
+        ParseTree.FuncDecl decl = new ParseTree.FuncDecl(id, rettype, params, localdecls, null);
+
+        env.put(id, decl.info);
+        env = new Env(env);
+
+        for (ParseTree.Param param : params) {
+            env.put(param.ident, param.info);
+        }
+
         return null;
     }
 
-    Object fundecl(Object name, Object parameters, Object return_type, Object locals, Object statements) throws Exception {
+    Object fundecl(String ident, Object parameters, Object return_type, Object locals, Object statements) throws Exception {
         // 1. check if this function has at least one return type
         // 2. etc.
         // 3. create and return funcdecl node
-        Token id = (Token) name;
+        Token id =  new Token(ident);
         ArrayList<ParseTree.Param> params         = (ArrayList<ParseTree.Param>) parameters;
         ParseTree.TypeSpec rettype                = (ParseTree.TypeSpec) return_type;
         ArrayList<ParseTree.LocalDecl> localdecls = (ArrayList<ParseTree.LocalDecl>) locals;
         ArrayList<ParseTree.Stmt> stmtlist        = (ArrayList<ParseTree.Stmt>) statements;
-        
+
         ParseTree.FuncDecl funcdecl = new ParseTree.FuncDecl(id.lexeme, rettype, params, localdecls, stmtlist);
         funcdecl.info.set_type(rettype.info);
+
+        env.put(id.lexeme, funcdecl.info);
 
         return funcdecl;
     }
@@ -117,12 +132,12 @@ public class ParserImpl {
         return (ParseTree.Param) parameter;
     }
 
-    Object param(Object type, Object ident) throws Exception {
+    Object param(Object type, String ident) throws Exception {
         // production rule: param -> VAR type_spec IDENT
 
         // TODO: handle IDENT in symbol table
         ParseTree.TypeSpec typespec = (ParseTree.TypeSpec) type;
-        Token token = (Token) ident;
+        Token token = new Token(ident);
 
         ParseTree.Param _param = new ParseTree.Param(token.lexeme, typespec);
         _param.info.set_type(typespec.info);
@@ -138,10 +153,9 @@ public class ParserImpl {
         return (ParseTree.TypeSpec) primitive_type;
     }
 
-    Object primtype(Object prim) throws Exception {
+    Object primtype(String keyword) throws Exception {
         // production rule: primtype -> INT | BOOL
 
-        String keyword = prim.toString();
         ParseTree.TypeSpec typespec = new ParseTree.TypeSpec(keyword);
 
         typespec.info.set_type(keyword);
@@ -162,14 +176,18 @@ public class ParserImpl {
         return new ArrayList<ParseTree.LocalDecl>();
     }
 
-    Object localdecl(Object s2, Object s3) {
+    Object localdecl(Object type, String ident) {
         // TODO: handle symbol table
 
-        ParseTree.TypeSpec typespec = (ParseTree.TypeSpec) s2;
-        Token id = (Token) s3;
+        ParseTree.TypeSpec typespec = (ParseTree.TypeSpec) type;
+        Token id = new Token(ident);
+
+        // add declaration to symbol table
+        env.put(id.lexeme, typespec.info);
+
         ParseTree.LocalDecl localdecl = new ParseTree.LocalDecl(id.lexeme, typespec);
         localdecl.reladdr = 1;
-        localdecl.info.set_type(typespec);
+        localdecl.info.set_type(typespec.info);
 
         return localdecl;
     }
@@ -220,22 +238,27 @@ public class ParserImpl {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Object assignstmt(Object s1, Object s3) throws Exception {
+    Object assignstmt(String ident, Object expression) throws Exception {
         // 1. check if ident.value_type matches with expr.value_type
         // 2. etc.
         // e. create and return node
-        Token id = (Token) s1;
-        ParseTree.Expr expr = (ParseTree.Expr) s3;
-        Object id_type = env.get(id.lexeme);
+        assert expression != null;
+
+        Token id = new Token(ident);
+        ParseTree.Expr expr = (ParseTree.Expr) expression;
+        ParseTreeInfo.DataTypeInfo id_type = (ParseTreeInfo.DataTypeInfo) env.get(id.lexeme);
         {
             // check if expr.type matches with id_type
-            if (id_type.equals("int")
-                    && (expr instanceof ParseTree.ExprIntLit)) {
-            } // ok
-            else if (id_type.equals("int")
-                    && (expr instanceof ParseTree.ExprCall)
-                    && (env.get(((ParseTree.ExprCall) expr).ident).equals("func()->int"))) {
-            } // ok
+            // if (id_type.equals("int")
+            //         && (expr instanceof ParseTree.ExprIntLit)) {
+            // } // ok
+            // else if (id_type.equals("int")
+            //         && (expr instanceof ParseTree.ExprCall)
+            //         && (env.get(((ParseTree.ExprCall) expr).ident).equals("func()->int"))) {
+            // } // ok
+
+            if ( id_type.equals(expr.info) );
+
             else {
                 throw new Exception("semantic error");
             }
@@ -316,12 +339,12 @@ public class ParserImpl {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Object expr_oper(Object s1, Object op, Object s3) throws Exception {
+    Object expr_oper(Object s1, String op, Object s3) throws Exception {
         // 1. check if expr1.value_type matches with the expr2.value_type
         // 2. etc.
         // 3. create and return node that has value_type
         ParseTree.Expr expr1 = (ParseTree.Expr) s1;
-        Token oper = (Token) op;
+        Token oper = new Token(op);
         ParseTree.Expr expr2 = (ParseTree.Expr) s3;
 
         // check if expr1.type matches with expr2.type
@@ -364,21 +387,22 @@ public class ParserImpl {
     Object expr_paren(Object s2) throws Exception {
         ParseTree.Expr inner_expr = (ParseTree.Expr) s2;
         ParseTree.Expr expr =  new ParseTree.ExprParen(inner_expr);
-        expr.info.set_type(inner_expr);
+        expr.info.set_type(inner_expr.info);
 
         return expr;
     }
 
-    Object expr_id(Object s1) throws Exception {
+    Object expr_id(String s1) throws Exception {
         // 1. check if id.lexeme can be found in chained symbol tables
         // 2. check if it is variable type
         // 3. etc.
         // 4. create and return node that has the value_type of the id.lexeme
-        Token id = (Token) s1;
+        Debug("expr -> IDENT(" + s1 + ")");
+        Token id = new Token(s1);
 
-        Object ident_attr = env.get(id.toString());
+        Object ident_attr = env.get(id.lexeme);
         if ( ident_attr == null )
-            throw new Exception("Identifier " + id.toString() + " is not in the symbol table");
+            throw new Exception("Identifier `" + id.lexeme + "` is not in the symbol table");
 
         ParseTree.ExprIdent expr = new ParseTree.ExprIdent(id.lexeme);
         expr.reladdr = 1;
@@ -387,28 +411,26 @@ public class ParserImpl {
         return expr;
     }
 
-    Object expr_int(Object s1) throws Exception {
+    Object expr_int(Integer num) throws Exception {
         // 1. create and return node that has int type
-        Token token = (Token) s1;
+        Token token = new Token(num);
         ParseTree.ExprIntLit int_literal =  new ParseTree.ExprIntLit(token.parseInt());
         int_literal.info.set_int_type();
 
         return int_literal;
     }
 
-    Object expr_bool(Object s1) throws Exception {
+    Object expr_bool(String bool_value) throws Exception {
         // 1. create and return node that has int type
-        Token token = (Token) s1;
-        if ( token.lexeme != "true" && token.lexeme != "false" )
-            throw new Exception("invalid bool literal: " + token.lexeme);
-
+        Token token = new Token(bool_value);
+        
         ParseTree.ExprBoolLit bool_literal = new ParseTree.ExprBoolLit( token.lexeme == "true" );
         bool_literal.info.set_bool_type();
-
+        
         return bool_literal;
     }
 
-    Object expr_call(Object s2, Object s4) throws Exception {
+    Object expr_call(String ident, Object _args) throws Exception {
         // 1. check if id.lexeme can be found in chained symbol tables
         // 2. check if it is function type
         // 3. check if the number and types of env(id.lexeme).params match with those of
@@ -416,9 +438,9 @@ public class ParserImpl {
         // 4. etc.
         // 5. create and return node that has the value_type of
         // env(id.lexeme).return_type
-        Token id = (Token) s2;
-        ArrayList<ParseTree.Arg> args = (ArrayList<ParseTree.Arg>) s4;
-        ParseTree.FuncDecl func_attr = (ParseTree.FuncDecl) env.get(id.lexeme);
+        Token id = new Token(ident);
+        ArrayList<ParseTree.Arg> args = (ArrayList<ParseTree.Arg>) _args;
+        ParseTreeInfo.DataTypeInfo func_attr = (ParseTreeInfo.DataTypeInfo) env.get(id.lexeme);
         {
             // check if argument types match with function param types
             if (env.get(id.lexeme).equals("func()->int")
@@ -429,7 +451,7 @@ public class ParserImpl {
             }
         }
         ParseTree.ExprCall expr = new ParseTree.ExprCall(id.lexeme, args);
-        expr.info.set_type(func_attr.info);
+        expr.info.set_type(func_attr);
 
         return expr;
     }

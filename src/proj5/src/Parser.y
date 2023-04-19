@@ -24,25 +24,27 @@ import java.io.*;
 %left   ADD     SUB
 %left   MUL     DIV     MOD
 
-%token <obj>    EQ   NE   LE   LT   GE   GT
-%token <obj>    ADD  SUB  MUL  DIV  MOD
-%token <obj>    OR   AND  NOT
+%token <sval> EQ   NE   LE   LT   GE   GT
+%token <sval> ADD  SUB  MUL  DIV  MOD
+%token <sval> OR   AND  NOT
 
-%token <obj>    IDENT     INT_LIT   BOOL_LIT
+%token <sval> IDENT BOOL_LIT
+%token <ival> INT_LIT
 
-%token <obj> BOOL  INT
-%token <obj> FUNC  IF  THEN  ELSE  WHILE  PRINT  RETURN  CALL
-%token <obj> BEGIN  END  LPAREN  RPAREN
-%token <obj> ASSIGN  VAR  SEMI  COMMA  FUNCRET
+%token <sval> BOOL INT
+%token <obj>  FUNC  IF  THEN  ELSE  WHILE  PRINT  RETURN  CALL
+%token <obj>  BEGIN  END  LPAREN  RPAREN
+%token <obj>  ASSIGN  VAR  SEMI  COMMA  FUNCRET
 
 // not needed at the moment
-%token <obj> NEWLINE WHITESPACE COMMENT BLKCOMMENT
+// %token <obj> NEWLINE WHITESPACE COMMENT BLKCOMMENT
 
-%type <obj> program   decl_list  decl
-%type <obj> fun_decl  local_decls  local_decl  type_spec  prim_type
-%type <obj> params  param_list  param  args  arg_list
-%type <obj> stmt_list  stmt  assign_stmt  print_stmt  return_stmt  if_stmt  while_stmt  compound_stmt     
-%type <obj> expr
+%type <obj>  program   decl_list  decl
+%type <obj>  fun_decl  local_decls  local_decl  type_spec
+%type <obj>  prim_type
+%type <obj>  params  param_list  param  args  arg_list
+%type <obj>  stmt_list  stmt  assign_stmt  print_stmt  return_stmt  if_stmt  while_stmt  compound_stmt     
+%type <obj>  expr
 
 %%
 program         : decl_list                 { Debug("program -> decl_list"); $$ = program($1); }
@@ -167,7 +169,13 @@ expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = ex
         try {
             yylval = new ParserVal(0);
             yyl_return = lexer.yylex();
-            last_token = (Token)yylval.obj;
+
+            last_token = new Token(yylval.sval);
+            // if ( yylval.sval != null )
+            //     last_token = new Token(yylval.sval);
+            // else
+            //     last_token = (Token)yylval.obj;
+
         }
         catch (IOException e) {
             System.out.println("IO error :"+e);
@@ -178,8 +186,8 @@ expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = ex
 
     public void yyerror (String error) {
         //System.out.println ("Error message for " + lexer.lineno+":"+lexer.column +" by Parser.yyerror(): " + error);
-        int last_token_lineno = 0;
-        int last_token_column = 0;
+        int last_token_lineno = this.lexer.lineno;
+        int last_token_column = this.lexer.column;
         System.out.println ("Error message by Parser.yyerror() at near " + last_token_lineno+":"+last_token_column + ": " + error);
     }
 

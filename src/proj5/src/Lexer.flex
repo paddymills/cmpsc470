@@ -30,7 +30,7 @@
   }
 
   private void consume() {
-    parser.yylval = new ParserVal((Object)yytext());
+    parser.yylval = new ParserVal(yytext());
     lineno = yyline   + 1;
     column = yycolumn + 1;
   }
@@ -82,12 +82,16 @@ blkcomment  = "#{"[^]*"}#"
 ","                                 { consume(); return Parser.COMMA      ; }
 
 {int}                               { consume(); return Parser.INT_LIT    ; }
+{bool}                              { consume(); return Parser.BOOL_LIT   ; }
 {identifier}                        { consume(); return Parser.IDENT      ; }
-{linecomment}                       { consume(); return Parser.COMMENT;    /* skip */ }
-{newline}                           { consume(); return Parser.NEWLINE;    /* skip */ }
-{whitespace}                        { consume(); return Parser.WHITESPACE; /* skip */ }
-{blkcomment}                        { consume(); return Parser.BLKCOMMENT; /* skip */ }
-
+// {linecomment}                       { consume(); return Parser.COMMENT;    /* skip */ }
+// {newline}                           { consume(); return Parser.NEWLINE;    /* skip */ }
+// {whitespace}                        { consume(); return Parser.WHITESPACE; /* skip */ }
+// {blkcomment}                        { consume(); return Parser.BLKCOMMENT; /* skip */ }
+{linecomment}                       { consume(); /* skip */ }
+{newline}                           { consume(); /* skip */ }
+{whitespace}                        { consume(); /* skip */ }
+{blkcomment}                        { consume(); /* skip */ }
 
 \b     { System.err.println("Sorry, backspace doesn't work"); }
 

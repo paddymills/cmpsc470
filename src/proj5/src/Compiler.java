@@ -27,7 +27,8 @@ public class Compiler {
         {
             System.out.println("Error: there is semantic error(s).");
             if(e != null && e.getMessage() != null)
-                System.out.println(e.getMessage());
+                // System.out.println(e.getMessage());
+                e.printStackTrace(System.out);
             return;
         }
 

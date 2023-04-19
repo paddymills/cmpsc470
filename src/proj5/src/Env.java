@@ -11,6 +11,8 @@ public class Env
     }
     
     public void put(String name, Object value) {
+        ParserImpl.Debug("Putting `" + name + "` into Env");
+
         // first call: initialize table HashMap
         if ( this.table == null )
             this.table = new HashMap<String, Object>();
@@ -23,7 +25,7 @@ public class Env
             return this.table.get(name);
 
         if ( this.prev != null )
-            return this.prev.Get(name);
+            return this.prev.get(name);
 
         return null;
     }
