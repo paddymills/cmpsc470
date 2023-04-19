@@ -20,22 +20,22 @@ if [ $# -eq 0 ]; then
     for f in test/minc/*; do
         if [[ $f == *.minc ]];
         then
-            # java -cp bin Program test/test$i.minc
+            # java -cp bin SemanticChecker test/test$i.minc
             # echo "File: $f"
-            diff -yZqs --suppress-common-lines <(java -cp bin Program $f) test/output/output_$(basename ${f%.*}).txt
+            diff -yZqs --suppress-common-lines <(java -cp bin SemanticChecker $f) test/output/output_$(basename ${f%.*}).txt
         fi
     done;
 
 else
-    # run Program entrypoint using given test name
-    # java -cp bin Program test/test$1.minc
-    diff --color=always -Z <(java -cp bin Program test/minc/$1.minc) test/output/output_$1.txt
+    # run SemanticChecker entrypoint using given test name
+    # java -cp bin SemanticChecker test/test$1.minc
+    diff --color=always -Z <(java -cp bin SemanticChecker test/minc/$1.minc) test/output/output_$1.txt
 fi
 
 
 # diff
 # for i in {0..8}; do
-#     result = ${java -cp bin Program "test$i"}
+#     result = ${java -cp bin SemanticChecker "test$i"}
 #     solution = "test/testsolu$i.txt"
 #     diff --color=always --width=80 -yw --suppress-common-lines <($result) $solution
 # done;
