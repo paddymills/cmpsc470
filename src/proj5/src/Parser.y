@@ -58,24 +58,24 @@ decl            : fun_decl                  { Debug("decl -> fun_decl"); $$ = de
 fun_decl        : FUNC IDENT LPAREN params RPAREN FUNCRET prim_type BEGIN local_decls
                         {
                             Debug("fun_decl -> FUNC ID(params)->prim_type BEGIN local_decls");
-                            $<obj>$ = fundecl($2, $4, $7, $9          );
+                            $<obj>$ = fundecl($2, $4, $7, $9);
                         }
                     stmt_list END
                         {
                             Debug("                                           stmt_list END");
-                            $$ =      fundecl($2, $4, $7, $9, $11, $12);
+                            $$ =      fundecl($2, $4, $7, $9, $10);
                         }
                 ;
 
-params          : param_list                { Debug("params -> param_list"); $$ = params____paramlist($1); }
-                |                           { Debug("params -> eps"       ); $$ = params____eps(); }
+params          : param_list                { Debug("params -> param_list"); $$ = params($1); }
+                |                           { Debug("params -> eps"       ); $$ = params(); }
                 ;
 
-param_list      : param_list COMMA param    { Debug("param_list -> param_list, param"); $$ = params____paramlist_param($1, $3); }
-                | param                     { Debug("param_list -> param"            ); $$ = params____param($1); }
+param_list      : param_list COMMA param    { Debug("param_list -> param_list, param"); $$ = param_list($1, $3); }
+                | param                     { Debug("param_list -> param"            ); $$ = param_list($1); }
                 ;
 
-param           : VAR type_spec IDENT       { Debug("param -> type_spec"); $$ = params($2, $3); }
+param           : VAR type_spec IDENT       { Debug("param -> type_spec"); $$ = param($2, $3); }
                 ;
 
 type_spec       : prim_type                 { Debug("type_spec -> prim_type"); $$ = typespec($1); }
@@ -105,11 +105,11 @@ stmt            : assign_stmt               { Debug("stmt -> assign_stmt"  ); $$
                 ;
 
 assign_stmt     : IDENT ASSIGN expr SEMI
-                    { Debug("assign_stmt -> IDENT <- expr ;"); $$ = assignstmt($1,$2,$3); }
+                    { Debug("assign_stmt -> IDENT <- expr ;"); $$ = assignstmt($1, $3); }
                 ;
 
 print_stmt      : PRINT expr SEMI
-                    { Debug("print_stmt -> expr"); $$ = print_stmt($2); }
+                    { Debug("print_stmt -> expr"); $$ = printstmt($2); }
                 ;
 
 return_stmt     : RETURN expr SEMI
@@ -117,38 +117,38 @@ return_stmt     : RETURN expr SEMI
                 ;
 
 if_stmt         : IF  LPAREN  expr  RPAREN  stmt  ELSE  stmt
-                    { Debug("if_stmt -> expr"); $$ = if_stmt($3, $5, $7); }
+                    { Debug("if_stmt -> expr"); $$ = ifstmt($3, $5, $7); }
                 ;
 
 while_stmt      : WHILE  LPAREN  expr  RPAREN  stmt
-                    { Debug("while_stmt -> expr"); $$ = while_stmt($3, $5); }
+                    { Debug("while_stmt -> expr"); $$ = whilestmt($3, $5); }
                 ;
 
 compound_stmt   : BEGIN  local_decls  stmt_list  END
-                    { Debug("compound_stmt -> expr"); $$ = compound_stmt($2, $3); }
+                    { Debug("compound_stmt -> expr"); $$ = compoundstmt($2, $3); }
                 ;
 
 args            : arg_list { Debug("args -> arg_list"); $$ = args($1); }
                 |          { Debug("args -> eps"     ); $$ = args(); }
                 ;
 
-arg_list        : arg_list  COMMA  expr { Debug("arg_list -> arg_list, expr"); $$ = arglist($1, $2); }
+arg_list        : arg_list  COMMA  expr { Debug("arg_list -> arg_list, expr"); $$ = arglist($1, $3); }
                 | expr                  { Debug("arg_list -> expr"          ); $$ = arglist($1); }
                 ;
 
-expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = expr_add($1, $3); }
-                | expr  SUB  expr       { Debug("expr -> expr - expr");  $$ = expr_sub($1, $3); }
-                | expr  MUL  expr       { Debug("expr -> expr * expr");  $$ = expr_mult($1, $3); }
-                | expr  DIV  expr       { Debug("expr -> expr / expr");  $$ = expr_div($1, $3); }
-                | expr  MOD  expr       { Debug("expr -> expr % expr");  $$ = expr_mod($1, $3); }
-                | expr  EQ   expr       { Debug("expr -> expr = expr");  $$ = expr_eq($1, $3); }
-                | expr  NE   expr       { Debug("expr -> expr != expr"); $$ = expr_ne($1, $3); }
-                | expr  LE   expr       { Debug("expr -> expr <= expr"); $$ = expr_le($1, $3); }
-                | expr  LT   expr       { Debug("expr -> expr < expr");  $$ = expr_lt($1, $3); }
-                | expr  GE   expr       { Debug("expr -> expr >= expr"); $$ = expr_ge($1, $3); }
-                | expr  GT  expr        { Debug("expr -> expr > expr");  $$ = expr_gt($1, $3); }
-                | expr  AND  expr       { Debug("expr -> expr && expr"); $$ = expr_and($1, $3); }
-                | expr  OR   expr       { Debug("expr -> expr || expr"); $$ = expr_or($1, $3); }
+expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  SUB  expr       { Debug("expr -> expr - expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  MUL  expr       { Debug("expr -> expr * expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  DIV  expr       { Debug("expr -> expr / expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  MOD  expr       { Debug("expr -> expr % expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  EQ   expr       { Debug("expr -> expr = expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  NE   expr       { Debug("expr -> expr != expr"); $$ = expr_oper($1, $2, $3); }
+                | expr  LE   expr       { Debug("expr -> expr <= expr"); $$ = expr_oper($1, $2, $3); }
+                | expr  LT   expr       { Debug("expr -> expr < expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  GE   expr       { Debug("expr -> expr >= expr"); $$ = expr_oper($1, $2, $3); }
+                | expr  GT  expr        { Debug("expr -> expr > expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  AND  expr       { Debug("expr -> expr && expr"); $$ = expr_oper($1, $2, $3); }
+                | expr  OR   expr       { Debug("expr -> expr || expr"); $$ = expr_oper($1, $2, $3); }
                 | NOT  expr             { Debug("expr -> !expr");        $$ = expr_not($2); }
                 | LPAREN  expr  RPAREN  { Debug("expr -> ( expr )");     $$ = expr_paren($2); }
                 | IDENT                 { Debug("expr -> ident");        $$ = expr_id($1); }
