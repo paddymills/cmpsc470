@@ -7,7 +7,7 @@ java -jar ../../bin/jflex-1.6.1.jar --nobak -d src src/Lexer.flex
 yacc -Jthrows="Exception" -Jextends=ParserImpl -Jclass=Parser -Jnorun -J src/Parser.y
 mv Parser*.java src/
 
-if [ $1 = "-c" ]; then
+if [[ $1 = "-c" ]]; then
     exit 0
 fi
 
