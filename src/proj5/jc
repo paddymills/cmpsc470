@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# clear console
+clear
+
 # run jflex
 java -jar ../../bin/jflex-1.6.1.jar --nobak -d src src/Lexer.flex
 
@@ -14,7 +17,7 @@ fi
 # compile source into bin directory
 javac -d bin src/*.java
 
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
     # run all tests
 
     for f in test/minc/*; do
@@ -22,10 +25,17 @@ if [ $# -eq 0 ]; then
         then
             # java -cp bin SemanticChecker test/test$i.minc
             # echo "File: $f"
-            diff -yZqs --suppress-common-lines <(java -cp bin SemanticChecker $f) test/output/output_$(basename ${f%.*}).txt
+            res=$(diff -yZqs --suppress-common-lines <(java -cp bin SemanticChecker $f) test/output/output_$(basename ${f%.*}).txt)
+            
+            case $res in
+                *identical ) echo -e "\e[32m\u2714 $f\e[0m";;
+                *differ    ) echo -e "\e[31m\u274c $f\e[0m";;
+            esac
+            # echo ">>> $f"
+            # java -cp bin SemanticChecker $f
         fi
     done;
-
+    unset res
 else
     # run SemanticChecker entrypoint using given test name
     # java -cp bin SemanticChecker test/test$1.minc
