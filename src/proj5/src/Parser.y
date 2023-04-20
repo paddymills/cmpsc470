@@ -77,7 +77,7 @@ param_list      : param_list COMMA param    { Debug("param_list -> param_list, p
                 | param                     { Debug("param_list -> param"            ); $$ = param_list($1); }
                 ;
 
-param           : VAR type_spec IDENT       { Debug("param -> type_spec"); $$ = param($2, $3); }
+param           : VAR type_spec IDENT       { Debug("param -> type_spec"); $$ = param($3, $2); }
                 ;
 
 type_spec       : prim_type                 { Debug("type_spec -> prim_type"); $$ = typespec($1); }
@@ -91,7 +91,7 @@ local_decls     : local_decls  local_decl   { Debug("local_decls -> local_decls 
                 |                           { Debug("local_decls -> eps"                   ); $$ = localdecls(); }
                 ;
 
-local_decl      : VAR  type_spec  IDENT  SEMI { Debug("local_decl -> VAR type_spec IDENT SEMI"); $$ = localdecl($2, $3); }
+local_decl      : VAR  type_spec  IDENT  SEMI { Debug("local_decl -> VAR type_spec IDENT SEMI"); $$ = localdecl($3, $2); }
                 ;
 
 stmt_list       : stmt_list stmt            { Debug("stmt_list -> stmt_list stmt"); $$ = stmtlist($1, $2); }
@@ -119,15 +119,17 @@ return_stmt     : RETURN expr SEMI
                 ;
 
 if_stmt         : IF  LPAREN  expr  RPAREN  stmt  ELSE  stmt
-                    { Debug("if_stmt -> expr"); $$ = ifstmt($3, $5, $7); }
+                    { Debug("if_stmt -> (expr) stmt ELSE stmt"); $$ = ifstmt($3, $5, $7); }
                 ;
 
 while_stmt      : WHILE  LPAREN  expr  RPAREN  stmt
-                    { Debug("while_stmt -> expr"); $$ = whilestmt($3, $5); }
+                    { Debug("while_stmt -> exprn stmt"); $$ = whilestmt($3, $5); }
                 ;
 
-compound_stmt   : BEGIN  local_decls  stmt_list  END
-                    { Debug("compound_stmt -> expr"); $$ = compoundstmt($2, $3); }
+compound_stmt   : BEGIN  local_decls
+                        { Debug("compound_stmt -> BEGIN local_decls"); $$ = compoundstmt($2); }
+                    stmt_list  END
+                        { Debug("                   stmt_list END"); $$ = compoundstmt($2, $3); }
                 ;
 
 args            : arg_list { Debug("args -> arg_list"); $$ = args($1); }
