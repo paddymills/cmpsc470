@@ -11,6 +11,15 @@ public class ParseTreeInfo
 
     public static abstract class DataTypeInfo {
         public DataType type;
+
+        public String toString() {
+            assert this.type != null;
+
+            if ( this.is_bool_type() )
+                return "bool";
+
+            return "int";
+        }
     
         public void set_int_type()    { this.type = DataType.Int; }
         public void set_bool_type()   { this.type = DataType.Bool; }

@@ -28,7 +28,11 @@ public class ParserImpl {
         // type
         // 2. assign the root, whose type is ParseTree.Program, to parsetree_program
         for (ParseTree.FuncDecl func : decllist) {
-            if ( func.ident == "main" && func.params.isEmpty() && func.rettype.info.is_int_type() ) {
+            if (
+                func.ident.equals("main") &&
+                func.params.size() == 0 &&
+                func.rettype.info.is_int_type()
+            ) {
                 parsetree_program = new ParseTree.Program(decllist);
         
                 return parsetree_program;
@@ -64,19 +68,22 @@ public class ParserImpl {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ParseTree.FuncDecl fundecl(String id, Object parameters, Object return_type, Object _locals) throws Exception {
+    ParseTree.FuncDecl fundecl(String _id, Object parameters, Object return_type, Object _locals) throws Exception {
         // 1. add function_type_info object (name, return type, params) into the global
         // scope of env
         // 2. create a new symbol table on top of env
         // 3. add parameters into top-local scope of env
         // 4. etc.
         
+        Token id = new Token(_id);
         ArrayList<ParseTree.Param> params     = (ArrayList<ParseTree.Param>) parameters;
         ParseTree.TypeSpec rettype            = (ParseTree.TypeSpec) return_type;
         ArrayList<ParseTree.LocalDecl> locals = (ArrayList<ParseTree.LocalDecl>) _locals;
-        ParseTree.FuncDecl decl = new ParseTree.FuncDecl(id, rettype, params, locals, null);
+        ParseTree.FuncDecl decl = new ParseTree.FuncDecl(id.lexeme, rettype, params, locals, null);
 
-        env.put(id, decl); // add function to current stack symbol table
+        decl.info.set_type(rettype);
+
+        env.put(id.lexeme, decl); // add function to current stack symbol table
         env = new Env(env);     // add new symbol table for new stack frame
 
         // add parameters to new stack frame
@@ -523,7 +530,7 @@ public class ParserImpl {
         // 1. create and return node that has int type
         Token token = new Token(bool_value);
         
-        ParseTree.ExprBoolLit bool_literal = new ParseTree.ExprBoolLit( token.lexeme == "true" );
+        ParseTree.ExprBoolLit bool_literal = new ParseTree.ExprBoolLit( token.lexeme.equals("true") );
         bool_literal.info.set_bool_type();
         
         return bool_literal;
