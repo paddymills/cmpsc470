@@ -6,9 +6,21 @@ import java.util.HashMap;
 public class ParserImpl {
     public static Boolean _debug = true;
 
+    public static int lineno;
+    public static int column;
+
     public static void Debug(String message) {
         if (_debug)
             System.out.println(message);
+    }
+
+    private static Exception Error(String message) {
+        return new Exception( String.format("[Error at %d:%d] %s", lineno, column, message) );
+    }
+
+    public static void set_loc(int line, int col) {
+        lineno = line;
+        column = col;
     }
 
     // This is for chained symbol table.
@@ -39,7 +51,7 @@ public class ParserImpl {
             }
         }
 
-        throw new Exception("no function `int main()` declared");
+        throw new Exception("The program must have one main function that returns int type and has no parameters.");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +92,12 @@ public class ParserImpl {
         ParseTree.TypeSpec rettype            = (ParseTree.TypeSpec) return_type;
         ArrayList<ParseTree.LocalDecl> locals = (ArrayList<ParseTree.LocalDecl>) _locals;
         ParseTree.FuncDecl decl = new ParseTree.FuncDecl(id.lexeme, rettype, params, locals, null);
-
         decl.info.set_type(rettype);
 
+        Debug("\tfn <" + id.lexeme + "({" + params.size() +  "}) -> " + rettype.typename +">");
+
         env.put(id.lexeme, decl); // add function to current stack symbol table
-        env = new Env(env);     // add new symbol table for new stack frame
+        env = new Env(env);       // add new symbol table for new stack frame
 
         // add parameters to new stack frame
         for (ParseTree.Param param : params) {
@@ -111,12 +124,13 @@ public class ParserImpl {
 
         ParseTree.FuncDecl funcdecl = new ParseTree.FuncDecl(id.lexeme, rettype, params, localdecls, stmtlist);
         funcdecl.info.set_type(rettype.info);
-
-        env.put(id.lexeme, funcdecl);
-
+        
         // leaving stack frame, pop symbol table 
         env = env.prev;
 
+        // overwrite function in symbol table, as now we have `stmtlist != null`
+        env.put(id.lexeme, funcdecl);
+        
         return funcdecl;
     }
     
@@ -221,7 +235,7 @@ public class ParserImpl {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ArrayList<ParseTree.Stmt> stmtlist(Object s1, Object s2) throws Exception {
-        // production rule: tmt_list -> stmt_list stmt
+        // production rule: stmt_list -> stmt_list stmt
 
         ArrayList<ParseTree.Stmt> stmtlist = (ArrayList<ParseTree.Stmt>) s1;
         ParseTree.Stmt stmt = (ParseTree.Stmt) s2;
@@ -250,11 +264,11 @@ public class ParserImpl {
         return s1;
     }
 
-    Object stmt_return(Object s1) throws Exception {
+    ParseTree.ReturnStmt stmt_return(Object s1) throws Exception {
         // production rule: stmt -> return_stmt
         
         assert (s1 instanceof ParseTree.ReturnStmt);
-        return s1;
+        return (ParseTree.ReturnStmt) s1;
     }
 
     Object stmt_if(Object s1) throws Exception {
@@ -328,7 +342,23 @@ public class ParserImpl {
         // 1. check if expr.value_type matches with the current function return type
         // 2. etc.
         // 3. create and return node
+
         ParseTree.Expr expr = (ParseTree.Expr) s2;
+
+        ParseTree.FuncDecl current_func = (ParseTree.FuncDecl) env.get_current_func();
+        if ( current_func == null )
+            throw Error("Cannot call return outside of a function body");
+
+        if ( !current_func.rettype.info.equals(expr.info) )
+            throw Error(
+                "The type of returning value (" +
+                expr.info.toString() +
+                ") should match with the return type (" +
+                current_func.info.toString()+
+                ") of the function main()."
+            );
+
+
         return new ParseTree.ReturnStmt(expr);
     }
 

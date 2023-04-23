@@ -11,7 +11,7 @@ public class Env
     }
     
     public void put(String name, Object value) {
-        ParserImpl.Debug("Putting `" + name + "` into Env");
+        ParserImpl.Debug("Putting `" + name + " <" + value.toString() + ">" + "` into Env");
 
         // first call: initialize table HashMap
         if ( this.table == null )
@@ -29,6 +29,24 @@ public class Env
 
         return null;
     }
+
+    public Object get_current_func() {
+        if ( this.table != null ) {
+            for (Object elem : this.table.values()) {
+                try {
+                    ParseTree.FuncDecl func = (ParseTree.FuncDecl) elem;
+                    if ( func.stmtlist == null )
+                        return func;
+                } catch (Exception e) {}
+            }
+        }
+
+        if ( this.prev == null )
+            return null;
+
+        return this.prev.get_current_func();
+    }
+
     public void Put(String name, Object value) {
         // call the actual function is not named like a class
         this.put(name, value);

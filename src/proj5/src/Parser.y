@@ -65,7 +65,7 @@ fun_decl        : FUNC IDENT LPAREN params RPAREN FUNCRET prim_type BEGIN local_
                     stmt_list END
                         {
                             Debug("                                           stmt_list END");
-                            $$ =      fundecl($2, $4, $7, $9, $10);
+                            $$ =      fundecl($2, $4, $7, $9, $11);
                         }
                 ;
 
@@ -129,7 +129,7 @@ while_stmt      : WHILE  LPAREN  expr  RPAREN  stmt
 compound_stmt   : BEGIN  local_decls
                         { Debug("compound_stmt -> BEGIN local_decls"); $$ = compoundstmt($2); }
                     stmt_list  END
-                        { Debug("                   stmt_list END"); $$ = compoundstmt($2, $3); }
+                        { Debug("                   stmt_list END"); $$ = compoundstmt($2, $4); }
                 ;
 
 args            : arg_list { Debug("args -> arg_list"); $$ = args($1); }
@@ -168,7 +168,11 @@ expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = ex
 
     private int yylex () {
         int yyl_return = -1;
+
         try {
+            // set token start location
+            this.set_loc(lexer.lineno, lexer.column);
+
             yylval = new ParserVal(0);
             yyl_return = lexer.yylex();
 

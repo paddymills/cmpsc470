@@ -59,8 +59,10 @@ public class Compiler {
         {
             System.out.println("================================================================================");
             System.out.print("Fail in printing parse tree.");
-            if(e != null && e.getMessage() != null)
+            if(e != null && e.getMessage() != null) {
                 System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
             return;
         }
 
