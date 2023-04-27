@@ -39,6 +39,7 @@ if [[ $# -eq 0 ]]; then
 else
     # run SemanticChecker entrypoint using given test name
     # java -cp bin SemanticChecker test/test$1.minc
+    echo "Running test: $1"
     diff --color=always -Z <(java -cp bin SemanticChecker test/minc/$1.minc) test/output/output_$1.txt
 fi
 

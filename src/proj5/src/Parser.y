@@ -24,14 +24,14 @@ import java.io.*;
 %left   ADD     SUB
 %left   MUL     DIV     MOD
 
-%token <sval> EQ   NE   LE   LT   GE   GT
-%token <sval> ADD  SUB  MUL  DIV  MOD
-%token <sval> OR   AND  NOT
+%token <obj> EQ   NE   LE   LT   GE   GT
+%token <obj> ADD  SUB  MUL  DIV  MOD
+%token <obj> OR   AND  NOT
 
-%token <sval> IDENT BOOL_LIT
-%token <ival> INT_LIT
+%token <obj> IDENT BOOL_LIT
+%token <obj> INT_LIT
 
-%token <sval> BOOL INT
+%token <obj> BOOL INT
 %token <obj>  FUNC  IF  THEN  ELSE  WHILE  PRINT  RETURN  CALL
 %token <obj>  BEGIN  END  LPAREN  RPAREN
 %token <obj>  ASSIGN  VAR  SEMI  COMMA  FUNCRET
@@ -57,15 +57,22 @@ decl_list       : decl_list decl            { Debug("decl_list -> decl_list decl
 decl            : fun_decl                  { Debug("decl -> fun_decl"); $$ = decl($1); }
                 ;
 
-fun_decl        : FUNC IDENT LPAREN params RPAREN FUNCRET prim_type BEGIN local_decls
+fun_decl        : FUNC IDENT LPAREN params RPAREN FUNCRET prim_type BEGIN
                         {
-                            Debug("fun_decl -> FUNC ID(params)->prim_type BEGIN local_decls");
-                            $<obj>$ = fundecl($2, $4, $7, $9);
+                            Debug("FUNC ID(params)->prim_type BEGIN");
+                            $$ = fundecl($1, $2, $4, $7);
+                        }
+                    local_decls
+                        {
+                            Debug("fun_decl -> ... local_decls");
+                            // $<obj>$ = fundecl($1, $2, $4, $7, $10);
+                            $$ = fundecl($9, $10);
                         }
                     stmt_list END
                         {
-                            Debug("                                           stmt_list END");
-                            $$ =      fundecl($2, $4, $7, $9, $11);
+                            Debug("... stmt_list END");
+                            // $$ = fundecl($2, $4, $7, $10, $12, $13);
+                            $$ = fundecl($11, $12, $13);
                         }
                 ;
 
@@ -91,7 +98,7 @@ local_decls     : local_decls  local_decl   { Debug("local_decls -> local_decls 
                 |                           { Debug("local_decls -> eps"                   ); $$ = localdecls(); }
                 ;
 
-local_decl      : VAR  type_spec  IDENT  SEMI { Debug("local_decl -> VAR type_spec IDENT SEMI"); $$ = localdecl($3, $2); }
+local_decl      : VAR  type_spec  IDENT  SEMI { Debug("local_decl -> VAR type_spec IDENT SEMI"); $$ = localdecl($1, $3, $2); }
                 ;
 
 stmt_list       : stmt_list stmt            { Debug("stmt_list -> stmt_list stmt"); $$ = stmtlist($1, $2); }
@@ -107,7 +114,7 @@ stmt            : assign_stmt               { Debug("stmt -> assign_stmt"  ); $$
                 ;
 
 assign_stmt     : IDENT ASSIGN expr SEMI
-                    { Debug("assign_stmt -> IDENT <- expr ;"); $$ = assignstmt($1, $3); }
+                    { Debug("assign_stmt -> IDENT <- expr ;"); $$ = assignstmt($1, $2, $3); }
                 ;
 
 print_stmt      : PRINT expr SEMI
@@ -118,18 +125,24 @@ return_stmt     : RETURN expr SEMI
                     { Debug("return_stmt -> RETURN expr ;"); $$ = returnstmt($2); }
                 ;
 
-if_stmt         : IF  LPAREN  expr  RPAREN  stmt  ELSE  stmt
-                    { Debug("if_stmt -> (expr) stmt ELSE stmt"); $$ = ifstmt($3, $5, $7); }
+if_stmt         : IF  LPAREN  expr  RPAREN
+                    { Debug("if_stmt -> (expr)"); $$ = ifstmt($3); }
+                stmt  ELSE  stmt
+                    { Debug("if_stmt -> (expr) stmt ELSE stmt"); $$ = ifstmt($3, $6, $8); }
                 ;
 
-while_stmt      : WHILE  LPAREN  expr  RPAREN  stmt
-                    { Debug("while_stmt -> exprn stmt"); $$ = whilestmt($3, $5); }
+while_stmt      : WHILE  LPAREN  expr  RPAREN
+                        { Debug("while_stmt -> exprn"); $$ = whilestmt($3); }
+                    stmt
+                        { Debug("while_stmt -> exprn stmt"); $$ = whilestmt($3, $6); }
                 ;
 
-compound_stmt   : BEGIN  local_decls
-                        { Debug("compound_stmt -> BEGIN local_decls"); $$ = compoundstmt($2); }
+compound_stmt   : BEGIN
+                        { Debug("compound_stmt -> BEGIN"); $$ = compoundstmt(); }
+                    local_decls
+                        { Debug("compound_stmt -> BEGIN local_decls"); $$ = compoundstmt($3); }
                     stmt_list  END
-                        { Debug("                   stmt_list END"); $$ = compoundstmt($2, $4); }
+                        { Debug("                   stmt_list END"); $$ = compoundstmt($3, $5); }
                 ;
 
 args            : arg_list { Debug("args -> arg_list"); $$ = args($1); }
@@ -150,33 +163,39 @@ expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = ex
                 | expr  LE   expr       { Debug("expr -> expr <= expr"); $$ = expr_oper($1, $2, $3); }
                 | expr  LT   expr       { Debug("expr -> expr < expr");  $$ = expr_oper($1, $2, $3); }
                 | expr  GE   expr       { Debug("expr -> expr >= expr"); $$ = expr_oper($1, $2, $3); }
-                | expr  GT  expr        { Debug("expr -> expr > expr");  $$ = expr_oper($1, $2, $3); }
+                | expr  GT   expr       { Debug("expr -> expr > expr");  $$ = expr_oper($1, $2, $3); }
                 | expr  AND  expr       { Debug("expr -> expr && expr"); $$ = expr_oper($1, $2, $3); }
                 | expr  OR   expr       { Debug("expr -> expr || expr"); $$ = expr_oper($1, $2, $3); }
-                | NOT  expr             { Debug("expr -> !expr");        $$ = expr_not($2); }
+                | NOT  expr             { Debug("expr -> !expr");        $$ = expr_not($1, $2); }
                 | LPAREN  expr  RPAREN  { Debug("expr -> ( expr )");     $$ = expr_paren($2); }
                 | IDENT                 { Debug("expr -> ident");        $$ = expr_id($1); }
                 | INT_LIT               { Debug("expr -> int");          $$ = expr_int($1); }
                 | BOOL_LIT              { Debug("expr -> bool");         $$ = expr_bool($1); }
                 | CALL  IDENT  LPAREN  args  RPAREN
-                    { Debug("expr -> CALL ident(args)"); $$ = expr_call($2, $4); }
+                    { Debug("expr -> CALL ident(args)"); $$ = expr_call($1, $2, $4); }
                 ;
 
 %%
     private Lexer lexer;
-    private Token last_token;
+    public Token last_token;
 
     private int yylex () {
         int yyl_return = -1;
 
         try {
+            last_token = (Token) yylval.obj;
+
+            // parse next token
+            yylval = new ParserVal(0);
+            yyl_return = lexer.yylex();
+            yylval.obj = new Token(yylval.sval, lexer.lineno, lexer.column);
+
             // set token start location
             this.set_loc(lexer.lineno, lexer.column);
 
-            yylval = new ParserVal(0);
-            yyl_return = lexer.yylex();
 
-            last_token = new Token(yylval.sval);
+            // Debug("Lexxing: " + yylval.sval);
+
             // if ( yylval.sval != null )
             //     last_token = new Token(yylval.sval);
             // else
@@ -187,6 +206,12 @@ expr            : expr  ADD  expr       { Debug("expr -> expr + expr");  $$ = ex
             System.out.println("IO error :"+e);
         }
         return yyl_return;
+    }
+
+    private Token kw_token(Object keyword) {
+        // Debug("generating keyword token " + keyword);
+        return (Token) keyword;
+        // return new Token(keyword, lexer.lineno, lexer.column);
     }
 
 

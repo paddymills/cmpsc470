@@ -33,11 +33,11 @@ public class Env
     public Object get_current_func() {
         if ( this.table != null ) {
             for (Object elem : this.table.values()) {
-                try {
+                if ( elem instanceof ParseTree.FuncDecl ) {
                     ParseTree.FuncDecl func = (ParseTree.FuncDecl) elem;
                     if ( func.stmtlist == null )
                         return func;
-                } catch (Exception e) {}
+                }
             }
         }
 
@@ -45,6 +45,11 @@ public class Env
             return null;
 
         return this.prev.get_current_func();
+    }
+
+    // for checking if a variable is already declared in the current stack frame
+    public boolean current_frame_contains(String name) {
+        return this.table != null && this.table.containsKey(name);
     }
 
     public void Put(String name, Object value) {

@@ -25,7 +25,7 @@
             "request": "launch",
             "mainClass": "SemanticChecker",
             "projectName": "cmpsc470_e51b16f2",
-            "args": "${workspaceFolder}/src/proj5/test/minc/test_01_main_succ.minc"
+            "args": "${workspaceFolder}/src/proj5/test/minc/test_04_stmt_fail3.minc"
         }
     ]
 }

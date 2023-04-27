@@ -1,5 +1,0 @@
-java.lang.ClassCastException: class ParseTree$TypeSpec cannot be cast to class ParseTree$LocalDecl (ParseTree$TypeSpec and ParseTree$LocalDecl are in unnamed module of loader 'app')
-	at ParserImpl.assignstmt(ParserImpl.java:307)
-	at Parser.yyparse(Parser.java:739)
-	at Compiler.Parse(Compiler.java:18)
-	at SemanticChecker.main(SemanticChecker.java:37)

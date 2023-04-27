@@ -13,6 +13,15 @@ public class Compiler {
     public void Parse()
     {
         ParserImpl._debug = false;
+        PrintWriter stackwriter = null;
+
+        try {
+            File file = new File("stacktrace.txt");
+            stackwriter = new PrintWriter(file);
+            stackwriter.print("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try {
             if (parser.yyparse() == 0)
@@ -32,16 +41,9 @@ public class Compiler {
             if(e != null && e.getMessage() != null)
                 System.out.println(e.getMessage());
 
-                try {
-                    PrintWriter stackwriter = new PrintWriter(new File("stacktrace.txt"));
+            // e.printStackTrace();
+            e.printStackTrace(stackwriter);
                     
-                    e.printStackTrace(stackwriter);
-                    
-                    stackwriter.close();
-                } catch (Exception e1) {
-                    System.out.println("Please generate `stacktrace.txt` to store to file");
-                }
-
             return;
         }
 
@@ -102,5 +104,8 @@ public class Compiler {
                 System.out.println(e.getMessage());
             return;
         }
+
+
+        stackwriter.close();
     }
 }
